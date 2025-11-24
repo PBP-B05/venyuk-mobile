@@ -22,6 +22,3 @@ blog (Bintoro)
 -Role atau peran pengguna beserta deskripsinya (karena bisa saja lebih dari satu jenis pengguna yang mengakses aplikasi) -Admin(Dapat menambahkan Venue,menghapus venue,menambahkan blog,dll) -User(Dapat mengakses fitur-fitur yang telah disediakan tetapi tidak dapat melakukan perubahan jadi hanya bisa booking dan membaca blog) -User belum login(Cuman bisa liat-liat jadi kalo mau pesen, beli, sparring, ikutan main, bikin post, dll, itu harus login/daftar)
 
 Alur pengintegrasiannya sendiri adalah pada pekan pertama fitur yang pertama kali di integrasi adalah Login dan Register yang merupakan fondasi untuk keseluruhan modul,kemudian di peka kedua fitur untuk menampilkan list booking venue,lalu di minggu ketiga baru modul-modul sisanya diintegrasikan. Dan di minggu terakhir digunakan untuk melakukan perbaikan bug-bug yang kemungkinan muncul selama proses uji coba.
-
-
-guys kyk gini sejauh ini aman gak??

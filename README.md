@@ -1,16 +1,27 @@
 # venyuk_mobile
 
-A new Flutter project.
+Nama-nama anggota kelompok 
+-Anderson Tirza Liman 
+-Bintoro Nata Wijaya 
+-Favian Muhammad Rasyad Reswara 
+-Muhammad Fattan Azzaka 
+-Clairine Christabel Lim 
+-Cyrillo Praditya Soeharto
 
-## Getting Started
+-Deskripsi aplikasi (cerita aplikasi yang diajukan serta kebermanfaatannya) Venyuk adalah aplikasi yang memberikan jasa untuk para penggunanya agar dapat menyewa venue/lapangan untuk jenis-jenis olahraga yang bervariasi. Tidak hanya itu Venyuk juga memiliki fitur untuk membeli perlengkapan untuk mendukung aktivitas olahraga pengguna. Kemudian pengguna dapat melakukan sparing dengan mencari lawan dengan fitur yang disediakan.Jika pengguna tidak memiliki teman untuk bermain Venyuk juga menyediakan fitur untuk "main bareng" dengan join venue yang ada dan masih kekurangan orang.Terakhir Venyuk menyediakan blog sebagai portal informasi untuk pemberitahuan terkini mengenai dunia olahraga,e-sport, dan public figure yang berhubungan dengan kegiatan olahraga(contohnya tentang acara bahkan voli, tepuk bulu, dan semacamnya).
 
-This project is a starting point for a Flutter application.
+-Daftar Modul yang akan diimplementasikan modul:
 
-A few resources to get you started if this is your first Flutter project:
+sewa lapangan (Andy)
+toko alat(Ello)
+main bareng (clairine)
+sparing (rasyad)
+promo (zaka)
+blog (Bintoro)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+-Role atau peran pengguna beserta deskripsinya (karena bisa saja lebih dari satu jenis pengguna yang mengakses aplikasi) -Admin(Dapat menambahkan Venue,menghapus venue,menambahkan blog,dll) -User(Dapat mengakses fitur-fitur yang telah disediakan tetapi tidak dapat melakukan perubahan jadi hanya bisa booking dan membaca blog) -User belum login(Cuman bisa liat-liat jadi kalo mau pesen, beli, sparring, ikutan main, bikin post, dll, itu harus login/daftar)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Alur pengintegrasiannya sendiri adalah pada pekan pertama fitur yang pertama kali di integrasi adalah Login dan Register yang merupakan fondasi untuk keseluruhan modul,kemudian di peka kedua fitur untuk menampilkan list booking venue,lalu di minggu ketiga baru modul-modul sisanya diintegrasikan. Dan di minggu terakhir digunakan untuk melakukan perbaikan bug-bug yang kemungkinan muncul selama proses uji coba.
+
+
+guys kyk gini sejauh ini aman gak??

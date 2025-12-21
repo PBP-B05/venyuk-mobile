@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-// Pastikan nama project sesuai pubspec.yaml (venyuk_mobile atau venyuk)
 import 'package:venyuk_mobile/features/article/models/blog_entry.dart'; 
+import 'package:venyuk_mobile/features/article/screens/blog_detail_page.dart';
 
 class BlogCard extends StatelessWidget {
   final BlogEntry blog;
-
   const BlogCard({super.key, required this.blog});
 
   @override
@@ -89,11 +88,13 @@ class BlogCard extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigasi ke detail
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Kamu memilih: ${blog.fields.title}"))
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlogDetailPage(blog: blog),
+                        ),
                       );
-                    },
+                    }, 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB71C1C),
                       foregroundColor: Colors.white,

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -50,12 +52,6 @@ class _BlogFormPageState extends State<BlogFormPage> {
                     setState(() {
                       _title = value!;
                     });
-                  },
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return "Judul tidak boleh kosong!";
-                    }
-                    return null;
                   },
                 ),
               ),
@@ -142,24 +138,24 @@ class _BlogFormPageState extends State<BlogFormPage> {
                 alignment: Alignment.center,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.red),
+                    backgroundColor: MaterialStateProperty.all(const Color(0xFFB71C1C)),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       // Kirim ke Django dan tunggu respons
                       // URL lengkap: http://127.0.0.1:8000/blog/add-blog-ajax/
-                      final response = await request.post(
-                        "http://127.0.0.1:8000/blog/add-blog-ajax/",
-                        {
-                          'title': _title,
-                          'content': _content,
-                          'thumbnail': _thumbnail,
-                          'category': _category,
-                        },
-                      );
-
+                      final response = await request.postJson( // <--- Pakai postJson
+                        "http://127.0.0.1:8000/blog/create-flutter/",
+                        jsonEncode(<String, String>{ // <--- Harus di-encode jadi String JSON
+                            'title': _title,
+                            'content': _content,
+                            'category': _category,
+                            'thumbnail': _thumbnail,
+                        }),
+                    );
                       if (context.mounted) {
-                        if (response['success'] == true) {
+                        if (response['status'] == 'success') {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text("Blog berhasil disimpan!"),
                           ));

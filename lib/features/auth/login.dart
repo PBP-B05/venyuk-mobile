@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../auth/register.dart';
 import '../venyuk/pages/landing_page.dart';
 import '../venyuk/pages/venue_page.dart';
+import '../article/screens/blog_list_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -64,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const VenuePage(),
+                            builder: (_) => const BlogListPage(),
                           ),
                         );
 

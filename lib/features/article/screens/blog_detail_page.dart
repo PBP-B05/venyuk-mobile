@@ -1,113 +1,245 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart'; 
 import 'package:venyuk_mobile/features/article/models/blog_entry.dart';
+import 'package:venyuk_mobile/features/article/models/comment.dart';
+import 'package:venyuk_mobile/features/article/screens/edit_blog_page.dart'; 
 
-class BlogDetailPage extends StatelessWidget {
+class BlogDetailPage extends StatefulWidget {
   final BlogEntry blog;
-
-  // Constructor: Wajib menerima parameter 'blog'
   const BlogDetailPage({super.key, required this.blog});
+  @override
+  State<BlogDetailPage> createState() => _BlogDetailPageState();
+}
+
+class _BlogDetailPageState extends State<BlogDetailPage> {
+  // 1. Controller untuk Input Teks
+  final TextEditingController _commentController = TextEditingController();
+  int? currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    // --- [BARU] 2. Panggil fungsi cek user saat halaman dibuka ---
+    _getCurrentUser();
+  }
+
+  Future<void> _getCurrentUser() async {
+    final request = context.read<CookieRequest>();
+    try {
+      // Ganti URL sesuai IP kamu (127.0.0.1 atau 10.0.2.2)
+      final response = await request.get('http://127.0.0.1:8000/blog/get-user-id/');
+      setState(() {
+        currentUserId = response['user_id'];
+      });
+    } catch (e) {
+      print("Gagal ambil user ID: $e");
+    }
+  }
+
+  Future<List<Comment>> fetchComments() async {
+    var url = Uri.parse('http://127.0.0.1:8000/blog/comments/${widget.blog.pk}/');
+    var response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      List<Comment> comments = [];
+      for (var d in data) {
+        comments.add(Comment.fromJson(d));
+      }
+      return comments;
+    } else {
+      return [];
+    }
+  }
+
+  // 3. Fungsi Kirim Komentar (Harus sejajar dengan fetchComments)
+  Future<void> sendComment(CookieRequest request) async {
+    if (_commentController.text.isEmpty) return;
+
+    final response = await request.postJson(
+      "http://127.0.0.1:8000/blog/add-comment-flutter/${widget.blog.pk}/",
+      jsonEncode({"content": _commentController.text}),
+    );
+
+    if (response['status'] == 'success') {
+      _commentController.clear(); // Hapus teks
+      setState(() {}); // Refresh tampilan biar komen baru muncul
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Komentar terkirim!")),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal: ${response['message']}")),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Blog Detail'),
-        backgroundColor: const Color(0xFFB71C1C), // Merah Maroon
+        backgroundColor: const Color(0xFFB71C1C),
         foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (blog.fields.thumbnail != null && blog.fields.thumbnail!.isNotEmpty)
-              SizedBox(
-                width: double.infinity,
-                height: 250, // Tinggi gambar detail lebih besar biar puas
-                child: Image.network(
-                  // Gunakan Proxy URL agar aman dari error CORS/Localhost
-                  'http://127.0.0.1:8000/blog/proxy-image/?url=${Uri.encodeComponent(blog.fields.thumbnail!)}',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+        actions: [
+          // 1. Tombol Edit (Cek Sendiri)
+          if (currentUserId != null && currentUserId == widget.blog.fields.user)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditBlogPage(blog: widget.blog),
+                  ),
+                );
+                if (context.mounted) Navigator.pop(context, true);
+              },
+            ),
+
+          // 2. Tombol Delete (Cek Sendiri)
+          if (currentUserId != null && currentUserId == widget.blog.fields.user)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                bool confirm = await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Hapus Blog?'),
+                        content: const Text('Yakin mau hapus?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Batal'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-              )
-            else
-              // Placeholder kalau tidak ada gambar
-              Container(
-                width: double.infinity,
-                height: 200,
-                color: Colors.grey[300],
-                child: const Center(
-                  child: Icon(Icons.image, size: 60, color: Colors.grey),
-                ),
-              ),
-            Padding(
+                    ) ??
+                    false;
+
+                if (confirm) {
+                  final response = await request.postJson(
+                    "http://127.0.0.1:8000/blog/delete-flutter/${widget.blog.pk}/",
+                    jsonEncode({}),
+                  );
+                  if (context.mounted) {
+                    if (response['status'] == 'success') {
+                      Navigator.pop(context, true);
+                    }
+                  }
+                }
+              },
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul
-                  Text(
-                    blog.fields.title,
-                    style: const TextStyle(
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+                  // --- GAMBAR ---
+                  if (widget.blog.fields.thumbnail != null && widget.blog.fields.thumbnail!.isNotEmpty)
+                    Image.network(
+                      'http://127.0.0.1:8000/blog/proxy-image/?url=${Uri.encodeComponent(widget.blog.fields.thumbnail!)}',
+                      height: 250, width: double.infinity, fit: BoxFit.cover,
+                      errorBuilder: (ctx, _, __) => Container(height: 200, color: Colors.grey),
+                    )
+                  else
+                    Container(height: 200, color: Colors.grey, child: const Icon(Icons.image, size: 50)),
                   
-                  // Info Tambahan (Kategori, dll)
-                  Row(
-                    children: [
-                      Icon(Icons.category, size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        blog.fields.category, 
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
-                  ),
-                  
-                  const Divider(height: 30, thickness: 1),
+                  const SizedBox(height: 16),
 
-                  // Konten Utama
-                  Text(
-                    blog.fields.content,
-                    textAlign: TextAlign.justify,
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                      height: 1.5, // Jarak antar baris biar enak dibaca
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
+                  // --- JUDUL & KONTEN ---
+                  Text(widget.blog.fields.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(widget.blog.fields.category, style: TextStyle(color: Colors.grey[600])),
+                  const Divider(),
+                  Text(widget.blog.fields.content, textAlign: TextAlign.justify),
                   
-                  // Tombol Kembali
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFB71C1C),
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Back to List'),
-                    ),
+                  const Divider(),
+                  const Text("Komentar", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  
+                  // --- LIST KOMENTAR ---
+                  FutureBuilder<List<Comment>>(
+                    future: fetchComments(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Text("Belum ada komentar.", style: TextStyle(color: Colors.grey));
+                      } else {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            var comment = snapshot.data![index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              child: ListTile(
+                                title: Text(comment.user, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                subtitle: Text(comment.content),
+                                trailing: Text(comment.createdAt.substring(0, 10), style: const TextStyle(fontSize: 10)),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    },
                   ),
+                  const SizedBox(height: 10), // Jarak biar gak ketutup input
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          
+          // BAGIAN BAWAH (Input Field Sticky)
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(blurRadius: 2, color: Colors.grey.withOpacity(0.3))],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _commentController,
+                    decoration: InputDecoration(
+                      hintText: "Tulis komentar...",
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  color: const Color(0xFFB71C1C),
+                  onPressed: () => sendComment(request), // Panggil fungsi kirim
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

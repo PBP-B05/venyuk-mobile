@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-// Sesuaikan import ini dengan nama project kamu
 import 'package:venyuk_mobile/features/article/models/blog_entry.dart';
-import 'package:venyuk_mobile/features/article/screens/blog_form.dart';
+import 'package:venyuk_mobile/features/article/screens/blog_form_page.dart';
 import 'package:venyuk_mobile/features/article/widgets/blog_card.dart';
 
 class BlogListPage extends StatefulWidget {
@@ -13,13 +12,41 @@ class BlogListPage extends StatefulWidget {
   State<BlogListPage> createState() => _BlogListPageState();
 }
 
+
+
 class _BlogListPageState extends State<BlogListPage> {
   // Variabel untuk menyimpan kategori yang sedang dipilih
   String selectedCategory = "All";
+  bool isSuperuser = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // --- [BARU] Cek status admin saat halaman dibuka ---
+    _checkAdminStatus();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final request = context.read<CookieRequest>();
+    try {
+      // Panggil endpoint yang sama dengan yang kita pakai di DetailPage
+      final response = await request.get('http://127.0.0.1:8000/blog/get-user-id/');
+      setState(() {
+        // Ambil data is_superuser (pastikan di views.py Django sudah return ini)
+        isSuperuser = response['is_superuser'] ?? false; 
+      });
+    } catch (e) {
+      print("Gagal cek status admin: $e");
+    }
+  }
 
   Future<List<BlogEntry>> fetchBlogs(CookieRequest request) async {
-    // URL disesuaikan: 127.0.0.1 untuk Web, 10.0.2.2 untuk Emulator
-    final response = await request.get('http://127.0.0.1:8000/blog/json/');
+    String url = 'http://127.0.0.1:8000/blog/json/';
+    if (selectedCategory == "My Blog") {
+      url = 'http://127.0.0.1:8000/blog/my-blog-json/';
+    }
+
+    final response = await request.get(url);
 
     List<BlogEntry> listBlog = [];
     for (var d in response) {
@@ -41,7 +68,6 @@ class _BlogListPageState extends State<BlogListPage> {
         backgroundColor: const Color(0xFFB71C1C), // Merah Maroon
         foregroundColor: Colors.white,
       ),
-      // Kita ganti body jadi Column supaya bisa menaruh Filter di atas List
       body: Column(
         children: [
           // ==============================================
@@ -55,6 +81,7 @@ class _BlogListPageState extends State<BlogListPage> {
               child: Row(
                 children: [
                   _buildFilterButton("All"),
+                  _buildFilterButton("My Blog"),
                   _buildFilterButton("Sports"),
                   _buildFilterButton("E-Sports"),
                   _buildFilterButton("Community Posts"),
@@ -73,22 +100,24 @@ class _BlogListPageState extends State<BlogListPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                   // Kalau error koneksi, kita return list kosong dulu biar ga crash
                    return const Center(child: Text("Gagal mengambil data / Server mati."));
                 } else {
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    // Pesan khusus kalau My Blog kosong
+                    if (selectedCategory == "My Blog") {
+                       return const Center(child: Text('Kamu belum memposting apapun.'));
+                    }
                     return const Center(child: Text('Belum ada blog.'));
                   } else {
-                    
-                    // --- LOGIKA FILTERING (CLIENT SIDE) ---
                     List<BlogEntry> allData = snapshot.data!;
                     List<BlogEntry> filteredData = [];
 
-                    if (selectedCategory == "All") {
+
+                    if (selectedCategory == "All" || selectedCategory == "My Blog") {
                       filteredData = allData;
-                    } else {
-                      // Filter data berdasarkan category dari Django
-                      // Kita pakai toLowerCase() biar aman (sports == Sports)
+                    } 
+                    // Kalau kategori lain (Sports, dll), baru kita saring manual
+                    else {
                       filteredData = allData.where((item) => 
                         item.fields.category.toLowerCase() == selectedCategory.toLowerCase()
                       ).toList();
@@ -96,12 +125,21 @@ class _BlogListPageState extends State<BlogListPage> {
                     // --------------------------------------
 
                     if (filteredData.isEmpty) {
-                       return const Center(child: Text('Tidak ada artikel di kategori ini.'));
+                       return const Center(child: Text('Tidak ada blog di kategori ini.'));
                     }
 
                     return ListView.builder(
                       itemCount: filteredData.length,
-                      itemBuilder: (_, index) => BlogCard(blog: filteredData[index]),
+                      itemBuilder: (_, index) {
+                        return BlogCard(
+                          blog: filteredData[index],
+                          onRefresh: () {
+                            setState(() {
+                                // Refresh halaman
+                            });
+                          },
+                        );
+                      },
                     );
                   }
                 }
@@ -110,19 +148,23 @@ class _BlogListPageState extends State<BlogListPage> {
           ),
         ],
       ),
+
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async { 
+          final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const BlogFormPage()), 
+            MaterialPageRoute(builder: (context) => BlogFormPage(isSuperuser: isSuperuser)),
           );
+          if (result == true) {
+            setState(() {
+            });
+          }
         },
         backgroundColor: const Color(0xFFB71C1C),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
-
   // Widget Helper untuk membuat Tombol Filter
   Widget _buildFilterButton(String categoryName) {
     bool isSelected = selectedCategory == categoryName;
@@ -131,13 +173,11 @@ class _BlogListPageState extends State<BlogListPage> {
       child: ChoiceChip(
         label: Text(categoryName),
         selected: isSelected,
-        // Warna kalau dipilih: Merah Maroon, Teks Putih
         selectedColor: const Color(0xFFB71C1C), 
         labelStyle: TextStyle(
           color: isSelected ? Colors.white : Colors.black,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
-        // Warna kalau tidak dipilih: Abu-abu
         backgroundColor: Colors.grey[200],
         onSelected: (bool selected) {
           setState(() {

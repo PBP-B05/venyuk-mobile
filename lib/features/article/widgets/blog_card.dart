@@ -4,7 +4,15 @@ import 'package:venyuk_mobile/features/article/screens/blog_detail_page.dart';
 
 class BlogCard extends StatelessWidget {
   final BlogEntry blog;
-  const BlogCard({super.key, required this.blog});
+  // 1. TAMBAHKAN VARIABLE INI
+  final Function() onRefresh; 
+
+  // 2. WAJIBKAN DI CONSTRUCTOR
+  const BlogCard({
+    super.key, 
+    required this.blog, 
+    required this.onRefresh 
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +32,7 @@ class BlogCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Gambar Blog
+          // ... (Bagian Gambar - Tidak ada perubahan) ...
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: blog.fields.thumbnail != null && blog.fields.thumbnail!.isNotEmpty
@@ -47,19 +55,20 @@ class BlogCard extends StatelessWidget {
                   ),
           ),
           
-          // 2. Konten Teks
+          // ... (Bagian Konten Teks) ...
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ... (Judul & Kategori - Tidak ada perubahan) ...
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       blog.fields.category.toUpperCase(),
                       style: const TextStyle(
-                        color: Color(0xFFB71C1C), // Merah Maroon
+                        color: Color(0xFFB71C1C),
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -83,17 +92,25 @@ class BlogCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
-                // Tombol Baca
+                // 3. UBAH LOGIKA TOMBOL BACA
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    // Ubah jadi async
+                    onPressed: () async { 
+                      // Simpan hasil kembalian (pop) ke variable result
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => BlogDetailPage(blog: blog),
                         ),
                       );
+
+                      // Cek jika resultnya true (artinya user habis Edit/Delete)
+                      if (result == true) {
+                        // Panggil fungsi refresh milik halaman induk
+                        onRefresh(); 
+                      }
                     }, 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB71C1C),

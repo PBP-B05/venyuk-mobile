@@ -1,11 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 class BlogFormPage extends StatefulWidget {
-  const BlogFormPage({super.key});
+  final bool isSuperuser;
+  const BlogFormPage({super.key, this.isSuperuser = false});
 
   @override
   State<BlogFormPage> createState() => _BlogFormPageState();
@@ -14,7 +14,6 @@ class BlogFormPage extends StatefulWidget {
 class _BlogFormPageState extends State<BlogFormPage> {
   final _formKey = GlobalKey<FormState>();
   
-  // Variabel untuk menyimpan input user
   String _title = "";
   String _content = "";
   String _thumbnail = "";
@@ -27,7 +26,7 @@ class _BlogFormPageState extends State<BlogFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('New Blog Post'),
-        backgroundColor: const Color(0xFFB71C1C), // Sesuaikan warna tema kamu
+        backgroundColor: const Color(0xFFB71C1C), 
         foregroundColor: Colors.white,
       ),
       body: Form(
@@ -106,31 +105,50 @@ class _BlogFormPageState extends State<BlogFormPage> {
                   },
                 ),
               ),
-
               // --- INPUT KATEGORI (Dropdown) ---
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: DropdownButtonFormField<String>(
-                  value: _category,
-                  decoration: InputDecoration(
-                    labelText: "Category",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
+                child: widget.isSuperuser 
+                  ? // JIKA SUPERUSER: Tampilkan Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _category,
+                      decoration: InputDecoration(
+                        labelText: "Category",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: "community posts", child: Text("Community Posts")),
+                        DropdownMenuItem(value: "e-sports", child: Text("E-Sports")),
+                        DropdownMenuItem(value: "sports", child: Text("Sports")),
+                      ],
+                      onChanged: (String? value) {
+                        setState(() {
+                          _category = value!;
+                        });
+                      },
+                    )
+                  : // JIKA USER BIASA: Tampilkan Teks Terkunci (Read Only)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200], // Warna abu biar kelihatan disabled
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text("Category", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          SizedBox(height: 4),
+                          Text(
+                            "Community Posts", // Hardcoded text
+                            style: TextStyle(fontSize: 16, color: Colors.black87),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: "community posts", child: Text("Community Posts")),
-                    DropdownMenuItem(value: "e-sports", child: Text("E-Sports")),
-                    DropdownMenuItem(value: "sports", child: Text("Sports")),
-                  ],
-                  onChanged: (String? value) {
-                    setState(() {
-                      _category = value!;
-                    });
-                  },
-                ),
               ),
-
               const SizedBox(height: 20),
 
               // --- TOMBOL SAVE ---
@@ -159,7 +177,7 @@ class _BlogFormPageState extends State<BlogFormPage> {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text("Blog berhasil disimpan!"),
                           ));
-                          Navigator.pop(context); // Kembali ke halaman sebelumnya
+                          Navigator.pop(context,true); // Kembali ke halaman sebelumnya
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text("Gagal menyimpan, silakan coba lagi."),

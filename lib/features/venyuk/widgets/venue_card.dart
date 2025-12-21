@@ -53,8 +53,8 @@ class VenueCard extends StatelessWidget {
                   children: venue.categories
                       .map(
                         (c) => Chip(
-                          label: Text(c),
-                          backgroundColor: Colors.red.shade50,
+                          label: Text(c, style: const TextStyle(color:  AppColors.primaryRed)),
+                          backgroundColor: const Color.fromARGB(255, 248, 211, 217),
                         ),
                       )
                       .toList(),
@@ -97,15 +97,23 @@ class VenueCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: venue.isAvailable ? onBook : null,
-                      child: Text(
-                        venue.isAvailable
-                            ? 'Book Now'
-                            : 'Not Available',
-                      ),
-                    ),
-                  ],
+                  ]
+                ),
+
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                  onPressed: venue.isAvailable ? onBook : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    disabledBackgroundColor: Colors.grey,
+                  ),
+                  child: Text(
+                    venue.isAvailable ? 'Book Now' : 'Not Available',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  ),
                 ),
               ],
             ),

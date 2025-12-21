@@ -55,6 +55,14 @@ class BookingPage extends StatelessWidget {
               ),
             ),
 
+            Text(
+              venue.address,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color.fromARGB(255, 25, 19, 19),
+              ),
+            ),
+
             const SizedBox(height: 8),
 
             // CATEGORIES

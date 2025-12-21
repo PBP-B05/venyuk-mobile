@@ -3,7 +3,7 @@ import '../models/promo.dart';
 import '../utils/date_formatter.dart';
 
 class PromoCard extends StatelessWidget {
-  final Promo promo;
+  final PromoElement promo;
   final VoidCallback? onTap;
 
   const PromoCard({

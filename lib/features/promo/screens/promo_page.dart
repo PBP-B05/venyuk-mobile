@@ -1,3 +1,7 @@
+// =====================================
+// FILE: lib/screens/promo_page.dart
+// =====================================
+
 import 'package:flutter/material.dart';
 import '../models/promo.dart';
 import '../services/promo_service.dart';
@@ -5,6 +9,8 @@ import '../widgets/promo_card.dart';
 import '../widgets/promo_filter_tabs.dart';
 import '../widgets/promo_hero_section.dart';
 import '../widgets/promo_action_bar.dart';
+import 'promo_detail_page.dart';
+import 'promo_create_page.dart';
 
 class PromoPage extends StatefulWidget {
   const PromoPage({Key? key}) : super(key: key);
@@ -15,8 +21,8 @@ class PromoPage extends StatefulWidget {
 
 class _PromoPageState extends State<PromoPage> {
   final PromoService _promoService = PromoService();
-  List<Promo> allPromos = [];
-  List<Promo> filteredPromos = [];
+  List<PromoElement> allPromos = [];
+  List<PromoElement> filteredPromos = [];
   bool isLoading = true;
   String selectedFilter = 'Semua';
 
@@ -67,21 +73,27 @@ class _PromoPageState extends State<PromoPage> {
   }
 
   void navigateToCreatePromo() {
-    // TODO: Navigate to create promo page
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => CreatePromoPage()),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PromoCreatePage()),
+    ).then((result) {
+      if (result == true) {
+        fetchPromos(); // Refresh list after create
+      }
+    });
   }
 
-  void navigateToPromoDetail(Promo promo) {
-    // TODO: Navigate to promo detail page
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => PromoDetailPage(promo: promo),
-    //   ),
-    // );
+  void navigateToPromoDetail(PromoElement promo) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PromoDetailPage(promo: promo),
+      ),
+    ).then((result) {
+      if (result == true) {
+        fetchPromos(); // Refresh list after edit/delete
+      }
+    });
   }
 
   @override

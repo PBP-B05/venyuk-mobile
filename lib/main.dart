@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'features/promo/services/auth_service.dart';
 
 
 void main() {
+  AuthService.setDummyUser(isSuperuser: true);
   runApp(const MyApp());
 }
 

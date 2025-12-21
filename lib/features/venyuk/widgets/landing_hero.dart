@@ -96,7 +96,7 @@ class LandingHero extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const VenuePage(), //Easier to debug
+                                builder: (_) => const LoginPage(), //Easier to debug
                               ),
                             );
                           }

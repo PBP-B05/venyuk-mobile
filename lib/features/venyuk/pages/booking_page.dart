@@ -25,13 +25,23 @@ class BookingPage extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
-                venue.imageUrl,
-                height: 200,
+              venue.imageUrl.isNotEmpty
+                  ? 'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(venue.imageUrl)}'
+                  : 'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(
+                      'https://cdn.antaranews.com/cache/1200x800/2025/09/10/1000017960.jpg',
+                    )}',
+              height: 160,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Image.network(
+                'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(
+                  'https://cdn.antaranews.com/cache/1200x800/2025/09/10/1000017960.jpg',
+                )}',
+                height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.image_not_supported, size: 100),
               ),
+            ),
             ),
 
             const SizedBox(height: 16),

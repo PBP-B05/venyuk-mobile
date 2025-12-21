@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-import 'auth/login.dart'; // <--- dari root lib
+import 'features/auth/login.dart'; // <--- dari root lib
 
 void main() {
   runApp(

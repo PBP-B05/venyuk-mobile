@@ -1,9 +1,9 @@
-// lib/features/versus/pages/community_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../models/community_model.dart';
+import '../services/versus_api.dart' as api;
 import 'community_detail_page.dart';
 import 'community_form_page.dart';
 
@@ -15,298 +15,347 @@ class CommunityListPage extends StatefulWidget {
 }
 
 class _CommunityListPageState extends State<CommunityListPage> {
+  static const Color kPrimary = Color(0xFFD84040);
+  static const Color kBg = Color(0xFFF6F7FB);
+
   late Future<CommunityOverview> _future;
 
   @override
   void initState() {
     super.initState();
-    _refresh();
+    _future = _fetch();
   }
 
-  void _refresh() {
+  Future<CommunityOverview> _fetch() async {
     final request = context.read<CookieRequest>();
-    _future = CommunityOverview.fetch(request);
+    final resp = await api.VersusApi.fetchCommunities(request);
+    return CommunityOverview.fromJson(resp);
   }
 
-  Future<void> _handleCreate() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const CommunityFormPage()),
-    );
-    if (result == true) {
-      setState(_refresh);
-    }
+  void _refresh() => setState(() => _future = _fetch());
+
+  Future<void> _snackFromResp(Map<String, dynamic> resp) async {
+    final msg = (resp['message'] ?? resp['detail'] ?? 'OK').toString();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  Future<void> _handleLeave() async {
-    final request = context.read<CookieRequest>();
-    try {
-      final resp = await CommunityOverview.leave(request);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(resp['message'] ?? 'Berhasil leave community.')),
-      );
-
-      if (resp['ok'] == true || resp['status'] == 'success') {
-        setState(_refresh);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal leave: $e')),
-      );
-    }
-  }
-
-  Future<void> _handleJoin(int id) async {
-    final request = context.read<CookieRequest>();
-    try {
-      final resp = await CommunityOverview.join(request, id);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(resp['message'] ?? 'Berhasil join community.')),
-      );
-
-      if (resp['ok'] == true || resp['status'] == 'success') {
-        setState(_refresh);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal join: $e')),
-      );
-    }
-  }
-
-  Future<void> _handleDelete(int id) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Hapus Community?'),
-        content: const Text('Aksi ini tidak bisa dibatalkan.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+  Future<bool> _confirm(String title, String message) async {
+    return (await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: kPrimary),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Ya'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus'),
+        )) ??
+        false;
+  }
+
+  Widget _sectionTitle(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+      ),
+    );
+  }
+
+  Widget _chip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F3F6),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+      ),
+    );
+  }
+
+  /// NOTE:
+  /// - Pakai `dynamic c` supaya tetap kompatibel dengan model yang sudah ada
+  ///   (overview.myCurrent & overview.communities), tanpa bikin class baru.
+  Widget _communityCard({
+    required dynamic c,
+    required bool loggedIn,
+    required VoidCallback onTap,
+    required Widget trailing,
+    bool emphasize = false,
+  }) {
+    final String name = (c?.name ?? '').toString();
+    final String sportLabel = (c?.primarySportLabel ?? '').toString();
+    final int members = (c?.totalMembers ?? 0) as int;
+    final bool isOwner = (c?.isOwner ?? false) as bool;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: emphasize ? Border.all(color: kPrimary.withOpacity(0.35), width: 1) : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: kPrimary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.groups_rounded, color: kPrimary),
+              ),
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (sportLabel.trim().isNotEmpty) _chip(sportLabel),
+                        _chip('Members: $members'),
+                        if (isOwner) _chip('Owner'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 10),
+              Opacity(opacity: loggedIn ? 1 : 0.6, child: trailing),
+            ],
+          ),
+        ),
+      ),
     );
-
-    if (ok != true) return;
-
-    final request = context.read<CookieRequest>();
-    try {
-      final resp = await CommunityOverview.delete(request, id);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(resp['message'] ?? 'Community dihapus.')),
-      );
-
-      if (resp['ok'] == true || resp['status'] == 'success') {
-        setState(_refresh);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal hapus: $e')),
-      );
-    }
-  }
-
-  Future<void> _openDetail(int id) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => CommunityDetailPage(id: id)),
-    );
-
-    if (result == true) {
-      setState(_refresh);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1FF),
+      backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F1FF),
-        elevation: 0,
         title: const Text('Communities'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0.5,
         actions: [
-          IconButton(
-            onPressed: () => setState(_refresh),
-            icon: const Icon(Icons.refresh),
-          ),
+          IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleCreate,
-        backgroundColor: const Color(0xFFD84040),
-        icon: const Icon(Icons.add),
-        label: const Text('Create'),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kPrimary,
+        foregroundColor: Colors.white,
+        onPressed: request.loggedIn
+            ? () async {
+                final ok = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CommunityFormPage()),
+                );
+                if (ok == true) _refresh();
+              }
+            : null,
+        child: const Icon(Icons.add),
       ),
       body: FutureBuilder<CommunityOverview>(
         future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+          if (!snap.hasData) {
+            return const Center(child: Text('Gagal memuat communities.'));
           }
 
-          final data = snapshot.data!;
-          final myCurrent = data.myCurrent;
-          final communities = data.communities;
+          final overview = snap.data!;
+          final my = overview.myCurrent;
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
             children: [
-              // ====== MY CURRENT COMMUNITY ======
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: myCurrent == null
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'My Current Community',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text('Kamu belum join / punya community.'),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _handleCreate,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD84040),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                                child: const Text('Buat Community'),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'My Current Community',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              myCurrent.name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text('Sport: ${myCurrent.primarySportLabel}'),
-                            Text('Owner: ${myCurrent.ownerUsername}'),
-                            Text('Members: ${myCurrent.totalMembers}'),
-                            const SizedBox(height: 14),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => _openDetail(myCurrent.id),
-                                    child: const Text('Detail'),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: _handleLeave,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          const Color(0xFFD84040),
-                                    ),
-                                    child: const Text('Leave'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                ),
-              ),
+              if (my != null) ...[
+                _sectionTitle('My Community'),
 
-              const SizedBox(height: 16),
+                _communityCard(
+                  c: my,
+                  loggedIn: request.loggedIn,
+                  emphasize: true,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CommunityDetailPage(communityId: my.id),
+                      ),
+                    );
+                    _refresh();
+                  },
+                  trailing: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: kPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    ),
+                    onPressed: request.loggedIn
+                        ? () async {
+                            final ok = await _confirm(
+                              'Leave community?',
+                              'Kamu yakin mau keluar dari community ini?',
+                            );
+                            if (!ok) return;
 
-              // ====== ALL COMMUNITIES ======
-              const Text(
-                'All Communities',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 10),
-
-              ...communities.map((c) {
-                final isMy = myCurrent != null && c.id == myCurrent.id;
-                final canJoin = !c.isOwner && !c.isMember && !isMy;
-
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                            final resp = await api.VersusApi.leaveCommunity(request);
+                            await _snackFromResp(resp);
+                            _refresh();
+                          }
+                        : null,
+                    child: const Text('Leave'),
                   ),
-                  child: ListTile(
-                    onTap: () => _openDetail(c.id),
-                    title: Text(
-                      c.name + (isMy ? ' (My)' : ''),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    subtitle: Text(
-                      '${c.primarySportLabel} • ${c.totalMembers} members',
-                    ),
-                    trailing: Row(
+                ),
+
+                const SizedBox(height: 10),
+              ],
+
+              _sectionTitle('All Communities'),
+
+              if (overview.communities.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Text('Belum ada community.'),
+                )
+              else
+                ...overview.communities.map((c) {
+                  final bool isMy = my != null && my.id == c.id;
+
+                  Widget trailing;
+                  if (c.isOwner) {
+                    trailing = Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (c.isOwner) ...[
-                          IconButton(
-                            tooltip: 'Delete',
-                            onPressed: () => _handleDelete(c.id),
-                            icon: const Icon(Icons.delete_outline),
-                          ),
-                        ],
-                        if (canJoin)
-                          ElevatedButton(
-                            onPressed: () => _handleJoin(c.id),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD84040),
-                            ),
-                            child: const Text('Join'),
-                          )
-                        else
-                          const Icon(Icons.chevron_right),
+                        IconButton(
+                          tooltip: 'Edit',
+                          onPressed: () async {
+                            final ok = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CommunityFormPage(communityId: c.id),
+                              ),
+                            );
+                            if (ok == true) _refresh();
+                          },
+                          icon: const Icon(Icons.edit, color: Colors.black54),
+                        ),
+                        IconButton(
+                          tooltip: 'Delete',
+                          onPressed: () async {
+                            final ok = await _confirm(
+                              'Delete community?',
+                              'Kamu yakin mau hapus community "${c.name}"?',
+                            );
+                            if (!ok) return;
+
+                            final resp = await api.VersusApi.deleteCommunity(request, c.id);
+                            await _snackFromResp(resp);
+                            _refresh();
+                          },
+                          icon: const Icon(Icons.delete, color: Colors.black54),
+                        ),
                       ],
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  } else {
+                    trailing = FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: isMy ? Colors.black26 : kPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      ),
+                      onPressed: request.loggedIn && !isMy
+                          ? () async {
+                              final ok = await _confirm(
+                                'Join community?',
+                                'Kamu yakin mau join community "${c.name}"?',
+                              );
+                              if (!ok) return;
+
+                              final resp = await api.VersusApi.joinCommunity(request, c.id);
+                              await _snackFromResp(resp);
+                              _refresh();
+                            }
+                          : null,
+                      child: Text(isMy ? 'Joined' : 'Join'),
+                    );
+                  }
+
+                  return _communityCard(
+                    c: c,
+                    loggedIn: request.loggedIn,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CommunityDetailPage(communityId: c.id),
+                        ),
+                      );
+                      _refresh();
+                    },
+                    trailing: trailing,
+                  );
+                }),
             ],
           );
         },

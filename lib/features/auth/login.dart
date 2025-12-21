@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-
 import '../auth/register.dart';
-import '../features/versus/pages/versus_list_page.dart';// <--- GANTI INI
+import '../versus/pages/versus_home_page.dart';
+
+// TAMBAHAN (JANGAN DIHAPUS)
+import '../versus/services/versus_session.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -60,11 +62,21 @@ class _LoginPageState extends State<LoginPage> {
                       );
 
                       if (request.loggedIn) {
+                        // TAMBAHAN: simpan user meta utk fallback versus (JANGAN DIHAPUS)
+                        final userId = response['user_id'];
+                        final uname = response['username'];
+                        if (userId != null && uname != null) {
+                          await VersusSession.saveLogin(
+                            userId: int.parse(userId.toString()),
+                            username: uname.toString(),
+                          );
+                        }
+
                         if (!context.mounted) return;
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const VersusListPage(), // <--- KE VERSUS
+                            builder: (_) => const VersusHomePage(),
                           ),
                         );
 

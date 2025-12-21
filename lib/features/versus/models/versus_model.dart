@@ -1,8 +1,4 @@
 // lib/features/versus/models/versus_model.dart
-import 'package:pbp_django_auth/pbp_django_auth.dart';
-
-/// FIX: samakan host dengan login.dart (auth)
-const String baseUrl = 'http://127.0.0.1:8000';
 
 class Challenge {
   final int id;
@@ -11,23 +7,32 @@ class Challenge {
   final String sportLabel;
   final String matchCategory;
   final String matchCategoryLabel;
-  final String startAt;
+  final String? startAt; // ISO string
   final String status;
   final String statusLabel;
+
   final int costPerPerson;
   final int prizePool;
+
   final String venueName;
+  final String displayVenueName;
+
+  final int playersJoined;
+  final int maxPlayers;
 
   final int hostId;
   final String hostName;
   final int? opponentId;
   final String opponentName;
 
-  final int playersJoined;
-  final int maxPlayers;
+  final bool hasOpponent;
+  final int stageCommunitySize;
 
   final String description;
   final String posterUrl;
+
+  /// ✅ NEW: hanya true jika user adalah owner host community (atau superuser)
+  final bool canManage;
 
   Challenge({
     required this.id,
@@ -42,97 +47,63 @@ class Challenge {
     required this.costPerPerson,
     required this.prizePool,
     required this.venueName,
+    required this.displayVenueName,
+    required this.playersJoined,
+    required this.maxPlayers,
     required this.hostId,
     required this.hostName,
     required this.opponentId,
     required this.opponentName,
-    required this.playersJoined,
-    required this.maxPlayers,
+    required this.hasOpponent,
+    required this.stageCommunitySize,
     required this.description,
     required this.posterUrl,
+    required this.canManage,
   });
 
+  static int _toInt(dynamic v) {
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    return int.tryParse(v?.toString() ?? '') ?? 0;
+  }
+
+  static bool _toBool(dynamic v) {
+    if (v is bool) return v;
+    final s = (v ?? '').toString().toLowerCase().trim();
+    return s == 'true' || s == '1' || s == 'yes';
+  }
+
   factory Challenge.fromJson(Map<String, dynamic> json) {
+    final map = (json as Map).cast<String, dynamic>();
+
     return Challenge(
-      id: (json['id'] ?? 0) as int,
-      title: (json['title'] ?? '') as String,
-      sport: (json['sport'] ?? '') as String,
-      sportLabel: (json['sport_label'] ?? '') as String,
-      matchCategory: (json['match_category'] ?? '') as String,
-      matchCategoryLabel: (json['match_category_label'] ?? '') as String,
-      startAt: (json['start_at'] ?? '') as String,
-      status: (json['status'] ?? '') as String,
-      statusLabel: (json['status_label'] ?? '') as String,
-      costPerPerson: (json['cost_per_person'] ?? 0) as int,
-      prizePool: (json['prize_pool'] ?? 0) as int,
-      venueName: (json['display_venue_name'] ?? '') as String,
-      hostId: (json['host_id'] ?? 0) as int,
-      hostName: (json['host_name'] ?? '') as String,
-      opponentId: json['opponent_id'] as int?,
-      opponentName: (json['opponent_name'] ?? '') as String,
-      playersJoined: (json['players_joined'] ?? 0) as int,
-      maxPlayers: (json['max_players'] ?? 0) as int,
-      description: (json['description'] ?? '') as String,
-      posterUrl: (json['poster_url'] ?? '') as String,
+      id: _toInt(map['id']),
+      title: (map['title'] ?? '').toString(),
+      sport: (map['sport'] ?? '').toString(),
+      sportLabel: (map['sport_label'] ?? '').toString(),
+      matchCategory: (map['match_category'] ?? '').toString(),
+      matchCategoryLabel: (map['match_category_label'] ?? '').toString(),
+      startAt: map['start_at']?.toString(),
+      status: (map['status'] ?? '').toString(),
+      statusLabel: (map['status_label'] ?? '').toString(),
+      costPerPerson: _toInt(map['cost_per_person']),
+      prizePool: _toInt(map['prize_pool']),
+      venueName: (map['venue_name'] ?? '').toString(),
+      displayVenueName: (map['display_venue_name'] ?? map['venue_name'] ?? '').toString(),
+      playersJoined: _toInt(map['players_joined']),
+      maxPlayers: _toInt(map['max_players']),
+      hostId: _toInt(map['host_id']),
+      hostName: (map['host_name'] ?? '').toString(),
+      opponentId: map['opponent_id'] == null ? null : _toInt(map['opponent_id']),
+      opponentName: (map['opponent_name'] ?? '').toString(),
+      hasOpponent: _toBool(map['has_opponent']),
+      stageCommunitySize: _toInt(map['stage_community_size']),
+      description: (map['description'] ?? '').toString(),
+      posterUrl: (map['poster_url'] ?? '').toString(),
+      canManage: _toBool(map['can_manage'] ?? false), // ✅ NEW
     );
   }
-}
 
-class VersusApi {
-  /// GET /versus/api/challenges/
-  static Future<List<Challenge>> fetchList(CookieRequest request) async {
-    final resp = await request.get('$baseUrl/versus/api/challenges/');
-    final list = (resp as List)
-        .map((e) => Challenge.fromJson((e as Map).cast<String, dynamic>()))
-        .toList();
-    return list;
-  }
-
-  /// GET /versus/api/challenges/<id>/
-  static Future<Challenge> fetchDetail(CookieRequest request, int id) async {
-    final resp = await request.get('$baseUrl/versus/api/challenges/$id/');
-    return Challenge.fromJson((resp as Map).cast<String, dynamic>());
-  }
-
-  /// POST /versus/api/challenges/create/
-  static Future<Map<String, dynamic>> create(
-    CookieRequest request, {
-    required String title,
-    required String sport,
-    required String matchCategory,
-    required String startAt, // yyyy-MM-ddTHH:mm:ss or iso
-    required String venueName,
-    required String costPerPerson,
-    required String prizePool,
-    required String description,
-    required String posterUrl,
-  }) async {
-    final resp = await request.post(
-      '$baseUrl/versus/api/challenges/create/',
-      {
-        'title': title,
-        'sport': sport,
-        'match_category': matchCategory,
-        'start_at': startAt,
-        'venue_name': venueName,
-        'cost_per_person': costPerPerson,
-        'prize_pool': prizePool,
-        'description': description,
-        'poster_url': posterUrl,
-      },
-    );
-    return (resp as Map).cast<String, dynamic>();
-  }
-
-  /// POST /versus/api/challenges/<id>/join/
-  static Future<Map<String, dynamic>> join(
-    CookieRequest request,
-    int id,
-  ) async {
-    final resp = await request.post(
-      '$baseUrl/versus/api/challenges/$id/join/',
-      {},
-    );
-    return (resp as Map).cast<String, dynamic>();
-  }
+  // Kalau UI kamu manggil getter ini, sekarang aman.
+  String get displayVenue => displayVenueName;
 }

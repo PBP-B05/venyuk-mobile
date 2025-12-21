@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/venue.dart';
+import '../models/venue_model.dart';
 import '../../../theme/app_colors.dart';
 
 class VenueCard extends StatelessWidget {
@@ -25,13 +25,21 @@ class VenueCard extends StatelessWidget {
                 const BorderRadius.vertical(top: Radius.circular(16)),
             child: Image.network(
               venue.imageUrl.isNotEmpty
-                  ? venue.imageUrl
-                  : 'https://via.placeholder.com/400',
+                  ? 'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(venue.imageUrl)}'
+                  : 'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(
+                      'https://cdn.antaranews.com/cache/1200x800/2025/09/10/1000017960.jpg',
+                    )}',
               height: 160,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.image_not_supported),
+              errorBuilder: (_, __, ___) => Image.network(
+                'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(
+                  'https://cdn.antaranews.com/cache/1200x800/2025/09/10/1000017960.jpg',
+                )}',
+                height: 160,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
 
@@ -45,8 +53,8 @@ class VenueCard extends StatelessWidget {
                   children: venue.categories
                       .map(
                         (c) => Chip(
-                          label: Text(c),
-                          backgroundColor: Colors.red.shade50,
+                          label: Text(c, style: const TextStyle(color:  AppColors.primaryRed)),
+                          backgroundColor: const Color.fromARGB(255, 248, 211, 217),
                         ),
                       )
                       .toList(),
@@ -89,15 +97,23 @@ class VenueCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: venue.isAvailable ? onBook : null,
-                      child: Text(
-                        venue.isAvailable
-                            ? 'Book Now'
-                            : 'Not Available',
-                      ),
-                    ),
-                  ],
+                  ]
+                ),
+
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                  onPressed: venue.isAvailable ? onBook : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    disabledBackgroundColor: Colors.grey,
+                  ),
+                  child: Text(
+                    venue.isAvailable ? 'Book Now' : 'Not Available',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  ),
                 ),
               ],
             ),

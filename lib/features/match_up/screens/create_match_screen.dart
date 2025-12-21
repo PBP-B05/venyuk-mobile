@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 
 class CreateMatchScreen extends StatefulWidget {
   const CreateMatchScreen({super.key});
@@ -37,23 +39,57 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
 
   Future<void> _fetchVenues() async {
     final request = context.read<CookieRequest>();
-    
-    // URL CHROME (127.0.0.1)
-    const String url = 'http://localhost:8000/venue/json/';
+    String url = 'http://localhost:8000/json/';
+
+    // Jika aplikasi berjalan di Android emulator, ganti localhost -> 10.0.2.2
+    try {
+      if (!kIsWeb && Platform.isAndroid) {
+        url = url.replaceFirst('localhost', '10.0.2.2');
+      }
+    } catch (_) {
+      // jika import dart:io gagal di web, sudah di-handle oleh kIsWeb
+    }
 
     try {
       final response = await request.get(url);
-      
-      setState(() {
-        _venues = List<Map<String, dynamic>>.from(response);
-        _isLoadingVenues = false;
-      });
-    } catch (e) {
-      print("Error fetching venues: $e");
-      setState(() {
-         _venues = []; 
-         _isLoadingVenues = false;
-      });
+
+      // Debug: cetak response untuk melihat bentuknya
+      debugPrint('Fetch venues response: $response');
+
+      List<Map<String, dynamic>> parsed = [];
+
+      if (response is List) {
+        parsed = List<Map<String, dynamic>>.from(response);
+      } else if (response is Map) {
+        if (response['results'] is List) {
+          parsed = List<Map<String, dynamic>>.from(response['results']);
+        } else if (response['venues'] is List) {
+          parsed = List<Map<String, dynamic>>.from(response['venues']);
+        } else {
+          // jika server mengembalikan map tunggal / object, coba konversi ke list satu elemen
+          parsed = [Map<String, dynamic>.from(response)];
+        }
+      } else {
+        throw Exception('Unexpected response type: ${response.runtimeType}');
+      }
+
+      if (mounted) {
+        setState(() {
+          _venues = parsed;
+          _isLoadingVenues = false;
+        });
+      }
+    } catch (e, st) {
+      debugPrint('Error fetching venues: $e\n$st');
+      if (mounted) {
+        setState(() {
+          _venues = [];
+          _isLoadingVenues = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengambil venue: $e')),
+        );
+      }
     }
   }
 

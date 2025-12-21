@@ -41,7 +41,7 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
     final request = context.read<CookieRequest>();
     try {
       // Fetch List Venue (Buat Dropdown)
-      final venueRes = await request.get('http://localhost:8000/venue/json/');
+      final venueRes = await request.get('http://localhost:8000/json/');
       
       // Fetch Detail Match (Buat ngisi form)
       final matchRes = await request.get('http://localhost:8000/match_up/${widget.matchId}/json/');

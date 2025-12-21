@@ -67,17 +67,14 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       if (!context.mounted) return;
 
-                      if (response['status'] == 'success') {
+                      if (response['status']) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Registrasi berhasil!'),
-                          ),
+                          const SnackBar(content: Text('Registrasi berhasil!')),
                         );
+
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoginPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

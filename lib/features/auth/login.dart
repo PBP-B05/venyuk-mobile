@@ -3,7 +3,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import '../auth/register.dart';
 import '../venyuk/pages/landing_page.dart';
-import '../match_up/screens/match_up_screen.dart';
+import '../venyuk/pages/venue_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -61,10 +61,12 @@ class _LoginPageState extends State<LoginPage> {
 
                       if (request.loggedIn) {
                         if (!context.mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const MatchUpScreen()),
-                            ); 
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const VenuePage(),
+                          ),
+                        );
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

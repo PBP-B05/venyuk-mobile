@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/venue.dart';
+import '../models/venue_model.dart';
 
 class VenueService {
-  static const baseUrl =
-      'https://pbp.cs.ui.ac.id/web/project/muhammad.fattan';
+  static const baseUrl = 'http://127.0.0.1:8000/';
 
   static Future<List<Venue>> fetchVenues({
     String? query,
@@ -12,13 +11,26 @@ class VenueService {
     int? minPrice,
     int? maxPrice,
   }) async {
-    final uri = Uri.parse('$baseUrl/venue/api/')
-        .replace(queryParameters: {
-      if (query != null) 'q': query,
-      if (category != null) 'category': category,
-      if (minPrice != null) 'min_price': minPrice.toString(),
-      if (maxPrice != null) 'max_price': maxPrice.toString(),
-    });
+    final params = <String, String>{};
+
+    if (query != null && query.isNotEmpty) {
+      params['q'] = query;
+    }
+
+    if (category != null && category.isNotEmpty) {
+      params['category'] = category;
+    }
+
+    if (minPrice != null) {
+      params['min_price'] = minPrice.toString();
+    }
+
+    if (maxPrice != null) {
+      params['max_price'] = maxPrice.toString();
+    }
+
+    final uri = Uri.parse('${baseUrl}venue_api/')
+        .replace(queryParameters: params);
 
     final response = await http.get(uri);
 
@@ -26,9 +38,7 @@ class VenueService {
       throw Exception('Failed to load venues');
     }
 
-    final data = jsonDecode(response.body);
-    return (data['venues'] as List)
-        .map((v) => Venue.fromJson(v))
-        .toList();
+    final List<dynamic> data = jsonDecode(response.body);
+    return data.map((v) => Venue.fromJson(v)).toList();
   }
 }

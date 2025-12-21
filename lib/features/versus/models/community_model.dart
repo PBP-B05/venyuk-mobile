@@ -1,5 +1,3 @@
-// lib/features/versus/models/community_model.dart
-
 class Community {
   final int id;
   final String name;
@@ -55,7 +53,6 @@ class CommunityOverview {
   });
 
   factory CommunityOverview.fromJson(dynamic raw) {
-    // 1) list langsung
     if (raw is List) {
       final list = raw
           .map((e) => Community.fromJson((e as Map).cast<String, dynamic>()))
@@ -63,7 +60,6 @@ class CommunityOverview {
       return CommunityOverview(myCurrent: null, communities: list);
     }
 
-    // 2) bentuk map { ok, my_current, communities }
     if (raw is Map) {
       final map = raw.cast<String, dynamic>();
       final myCurrentJson = map['my_current'];

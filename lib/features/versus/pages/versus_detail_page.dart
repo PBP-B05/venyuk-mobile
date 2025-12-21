@@ -124,7 +124,6 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
             children: [
-              // Card utama (mirip web)
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -141,7 +140,6 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ✅ Judul matchup (besar)
                     Text(
                       ch.title,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -151,7 +149,6 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
                     ),
                     const SizedBox(height: 6),
 
-                    // ✅ Hosted by (kecil, di bawah judul)
                     Text(
                       'Hosted by: $hostText',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -160,7 +157,6 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // badges kecil ala web
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -174,7 +170,6 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
                     const Divider(height: 1),
                     const SizedBox(height: 12),
 
-                    // Info rows ala web
                     _infoRow(emoji: '🗓️', text: dateStr),
                     _infoRow(emoji: '📍', text: venueLabel),
                     _infoRow(emoji: '💲', text: costLabel),
@@ -206,7 +201,6 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
 
                     const SizedBox(height: 16),
 
-                    // Button merah ala web
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(

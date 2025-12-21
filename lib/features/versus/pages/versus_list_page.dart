@@ -192,7 +192,6 @@ class _VersusListPageState extends State<VersusListPage> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, i) {
-                        // separator di odd index
                         if (i.isOdd) return const SizedBox(height: 12);
 
                         final idx = i ~/ 2;
@@ -294,7 +293,6 @@ class _HeaderCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 10),
-          // Hint kecil biar konsisten vibe detail page
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -384,7 +382,6 @@ class _VersusCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row (icon + title + chips) -> mirip detail
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -430,7 +427,6 @@ class _VersusCard extends StatelessWidget {
           const Divider(height: 1),
           const SizedBox(height: 12),
 
-          // Info rows (emoji) -> sama dengan detail
           _EmojiRow(emoji: '🗓️', text: dateStr),
           _EmojiRow(emoji: '📍', text: venueLabel),
           _EmojiRow(

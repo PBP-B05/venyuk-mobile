@@ -91,9 +91,6 @@ class _CommunityListPageState extends State<CommunityListPage> {
     );
   }
 
-  /// NOTE:
-  /// - Pakai `dynamic c` supaya tetap kompatibel dengan model yang sudah ada
-  ///   (overview.myCurrent & overview.communities), tanpa bikin class baru.
   Widget _communityCard({
     required dynamic c,
     required bool loggedIn,

@@ -1,5 +1,3 @@
-// lib/features/versus/models/versus_model.dart
-
 class Challenge {
   final int id;
   final String title;
@@ -31,7 +29,6 @@ class Challenge {
   final String description;
   final String posterUrl;
 
-  /// ✅ NEW: hanya true jika user adalah owner host community (atau superuser)
   final bool canManage;
 
   Challenge({
@@ -100,10 +97,9 @@ class Challenge {
       stageCommunitySize: _toInt(map['stage_community_size']),
       description: (map['description'] ?? '').toString(),
       posterUrl: (map['poster_url'] ?? '').toString(),
-      canManage: _toBool(map['can_manage'] ?? false), // ✅ NEW
+      canManage: _toBool(map['can_manage'] ?? false), 
     );
   }
 
-  // Kalau UI kamu manggil getter ini, sekarang aman.
   String get displayVenue => displayVenueName;
 }

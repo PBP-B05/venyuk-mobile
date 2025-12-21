@@ -1,4 +1,3 @@
-// lib/features/versus/services/versus_session.dart
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +11,7 @@ class VersusSession {
   static DateTime? _cachedAt;
 
   /// Simpan meta login untuk fallback Versus (kalau cookie/session gak kebawa).
-  /// - userId opsional (karena login_api kamu sekarang kemungkinan belum return user_id)
+  /// - userId opsional 
   static Future<void> saveLogin({
     int? userId,
     required String username,
@@ -57,8 +56,6 @@ class VersusSession {
       if (resp is Map) {
         final map = resp.cast<String, dynamic>();
 
-        // NOTE: backend kamu ada yang pakai "is_authenticated"
-        // bukan "is_authenticated": true/false
         final isAuth = map['is_authenticated'] == true;
 
         if (isAuth) {

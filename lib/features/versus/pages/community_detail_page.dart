@@ -127,7 +127,6 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
             children: [
-              // Card utama (mirip VersusDetailPage)
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -144,7 +143,6 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ✅ Judul besar
                     Text(
                       name,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -154,7 +152,6 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // ✅ Badges / chips ala web
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -168,7 +165,6 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
                     const Divider(height: 1),
                     const SizedBox(height: 12),
 
-                    // ✅ Info rows emoji (konsisten sama VersusDetailPage)
                     _infoRow(emoji: '🏷️', text: 'Primary Sport: $sportLabel'),
                     _infoRow(emoji: '👑', text: 'Owner: $owner'),
                     _infoRow(emoji: '👥', text: 'Members: $members'),
@@ -195,7 +191,6 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
 
                     const SizedBox(height: 16),
 
-                    // ✅ Actions (owner vs non-owner)
                     if (c.isOwner) ...[
                       Row(
                         children: [

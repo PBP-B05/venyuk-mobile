@@ -13,13 +13,13 @@ class VersusFormPage extends StatefulWidget {
 
 class _VersusFormPageState extends State<VersusFormPage> {
   static const Color kPrimary = Color(0xFFD84040);
-  static const Color kSoftBg = Color(0xFFFFF4F4); // pink lembut
+  static const Color kSoftBg = Color(0xFFFFF4F4); 
 
   final _formKey = GlobalKey<FormState>();
 
   final _title = TextEditingController();
   final _startAt = TextEditingController(); // yyyy-MM-ddTHH:mm
-  final _venueName = TextEditingController(); // fallback (auto dari dropdown)
+  final _venueName = TextEditingController(); 
   final _cost = TextEditingController(text: '0');
   final _prize = TextEditingController(text: '0');
   final _desc = TextEditingController();
@@ -140,7 +140,7 @@ class _VersusFormPageState extends State<VersusFormPage> {
         matchCategory: _category,
         startAt: _startAt.text.trim(),
         venueName: _venueName.text.trim(), // fallback
-        venueId: _venueId, // ✅ kirim uuid venue kalau ada
+        venueId: _venueId, 
         costPerPerson: _cost.text.trim(),
         prizePool: _prize.text.trim(),
         description: _desc.text.trim(),
@@ -249,7 +249,6 @@ class _VersusFormPageState extends State<VersusFormPage> {
                 ),
                 const SizedBox(height: 12),
 
-                // ✅ VENUE DROPDOWN
                 DropdownButtonFormField<String>(
                   value: (_venueId != null && _venueId!.isNotEmpty) ? _venueId : '',
                   isExpanded: true,
@@ -288,7 +287,6 @@ class _VersusFormPageState extends State<VersusFormPage> {
                           final id = (val ?? '').trim();
                           setState(() => _venueId = id.isEmpty ? null : id);
 
-                          // isi fallback venue_name otomatis dari pilihan
                           if (id.isEmpty) {
                             _venueName.text = '';
                           } else {

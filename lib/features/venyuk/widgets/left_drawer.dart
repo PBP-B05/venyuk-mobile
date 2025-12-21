@@ -9,7 +9,8 @@ import '../../match_up/screens/match_up_screen.dart';
 import '../../venyuk/pages/venue_page.dart'; 
 import '../../promo/screens/promo_page.dart';
 import '../../ven_shop/screens/shop_page.dart';
-import 'package:venyuk_mobile/features/versus/pages/versus_list_page.dart';
+import '../../versus/pages/versus_list_page.dart';
+import "../../article/screens/blog_list_page.dart";
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -112,10 +113,9 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.article_outlined),
             title: const Text('Blog'),
             onTap: () {
-              // Ganti dengan halaman BlogPage jika sudah ada
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Fitur Blog Coming Soon!"))
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const BlogListPage()),
               );
             },
           ),
@@ -128,7 +128,7 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Logout', style: TextStyle(color: Colors.red)),
             onTap: () async {
               // Gunakan localhost:8000 agar konsisten dengan cookie session
-              final response = await request.logout("http://localhost:8000/authenticate/logout_user/");
+              final response = await request.logout("http://127.0.0.1:8000/authenticate/logout_user/");
               
               if (!context.mounted) return;
               

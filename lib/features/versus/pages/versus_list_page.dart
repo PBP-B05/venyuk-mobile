@@ -192,6 +192,7 @@ class _VersusListPageState extends State<VersusListPage> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, i) {
+                        // separator di odd index
                         if (i.isOdd) return const SizedBox(height: 12);
 
                         final idx = i ~/ 2;
@@ -325,7 +326,7 @@ class _SportDropdown extends StatelessWidget {
       isExpanded: true,
       decoration: InputDecoration(
         filled: true,
-        fillColor: const Color(0xFFF1F3F6), // mirip chip bg di detail
+        fillColor: const Color(0xFFF1F3F6), // mirip chip bg 
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(999),

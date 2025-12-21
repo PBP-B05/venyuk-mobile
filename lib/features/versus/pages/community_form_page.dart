@@ -79,6 +79,7 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
       final resp =
           await api.VersusApi.fetchCommunityDetail(request, widget.communityId!);
 
+      // backend detail: { ok, community: {...}, ... }
       final Map<String, dynamic> raw = Map<String, dynamic>.from(resp as Map);
       final comm =
           Community.fromJson((raw['community'] ?? raw) as Map<String, dynamic>);
@@ -161,6 +162,7 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         children: [
+          // Card utama (mirip VersusDetail / CommunityDetail)
           Container(
             decoration: BoxDecoration(
               color: Colors.white,

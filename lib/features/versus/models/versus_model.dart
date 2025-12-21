@@ -14,6 +14,7 @@ class Challenge {
 
   final String venueName;
   final String displayVenueName;
+  final String venueId; // optional string (uuid/number), empty if none
 
   final int playersJoined;
   final int maxPlayers;
@@ -45,6 +46,7 @@ class Challenge {
     required this.prizePool,
     required this.venueName,
     required this.displayVenueName,
+    required this.venueId,
     required this.playersJoined,
     required this.maxPlayers,
     required this.hostId,
@@ -87,6 +89,7 @@ class Challenge {
       prizePool: _toInt(map['prize_pool']),
       venueName: (map['venue_name'] ?? '').toString(),
       displayVenueName: (map['display_venue_name'] ?? map['venue_name'] ?? '').toString(),
+      venueId: (map['venue_id'] ?? '').toString(),
       playersJoined: _toInt(map['players_joined']),
       maxPlayers: _toInt(map['max_players']),
       hostId: _toInt(map['host_id']),

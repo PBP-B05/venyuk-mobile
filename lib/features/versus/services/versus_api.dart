@@ -18,7 +18,6 @@ class VersusApi {
     return u.origin; // scheme + host (+port)
   }
 
-  // ============ VENUE (UNTUK DROPDOWN) ============
   // GET: /venue/json/ -> List[{id,name,...}]
   static Future<List<Map<String, dynamic>>> fetchVenues(
     CookieRequest request,
@@ -32,7 +31,6 @@ class VersusApi {
     return [];
   }
 
-  // ============ COMMUNITY ============
   static Future<dynamic> fetchCommunities(CookieRequest request) async {
     return await request.get(communitiesUrl());
   }
@@ -101,7 +99,6 @@ class VersusApi {
     return (resp as Map).cast<String, dynamic>();
   }
 
-  // ============ CHALLENGE / MATCHUP ============
   static Future<dynamic> fetchChallenges(CookieRequest request) async {
     return await request.get(challengesUrl());
   }
@@ -120,7 +117,7 @@ class VersusApi {
     required String matchCategory,
     required String startAt, // ISO string
     required String venueName,
-    String? venueId, // 
+    String? venueId, 
     required String costPerPerson,
     required String prizePool,
     required String description,
@@ -152,7 +149,7 @@ class VersusApi {
     required String matchCategory,
     required String startAt, // ISO string
     required String venueName,
-    String? venueId, // 
+    String? venueId, 
     required String costPerPerson,
     required String prizePool,
     required String description,

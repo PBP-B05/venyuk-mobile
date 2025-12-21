@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/versus_model.dart';
 import '../services/versus_api.dart' as api;
+import 'versus_form_page.dart';
 
 class VersusDetailPage extends StatefulWidget {
   final int challengeId;
@@ -39,6 +40,47 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
     setState(() => _future = _fetch());
+  }
+
+  Future<void> _edit(int id) async {
+    final ok = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => VersusFormPage(challengeId: id)),
+    );
+    if (ok == true && mounted) {
+      setState(() => _future = _fetch());
+    }
+  }
+
+  Future<void> _delete(int id, String title) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Hapus Matchup'),
+        content: Text('Yakin mau hapus "$title"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: kPrimary),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    final request = context.read<CookieRequest>();
+    try {
+      final resp = await api.VersusApi.deleteChallenge(request, id);
+      final msg = (resp['message'] ?? resp['detail'] ?? 'Matchup dihapus').toString();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      Navigator.pop(context, true); // kembali ke list
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal hapus: $e')));
+    }
   }
 
   String _formatDateId(String? iso) {
@@ -201,20 +243,51 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
 
                     const SizedBox(height: 16),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: request.loggedIn ? _join : null,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: kPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
+                    if (ch.canManage) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _edit(ch.id),
+                              icon: const Icon(Icons.edit),
+                              label: const Text('Edit'),
+                            ),
                           ),
-                        ),
-                        child: const Text('Join Matchup'),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () => _delete(ch.id, ch.title),
+                              icon: const Icon(Icons.delete),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: kPrimary,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                              ),
+                              label: const Text('Delete'),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                    ] else ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: request.loggedIn && ch.status.toLowerCase() == 'open'
+                              ? _join
+                              : null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: kPrimary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          child: const Text('Join Matchup'),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

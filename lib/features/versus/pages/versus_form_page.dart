@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
+import '../models/versus_model.dart';
 import '../services/versus_api.dart';
 
 class VersusFormPage extends StatefulWidget {
-  const VersusFormPage({super.key});
+  final int? challengeId; // null = create, not null = edit
+  const VersusFormPage({super.key, this.challengeId});
+
+  bool get isEdit => challengeId != null;
 
   @override
   State<VersusFormPage> createState() => _VersusFormPageState();
@@ -19,7 +23,7 @@ class _VersusFormPageState extends State<VersusFormPage> {
 
   final _title = TextEditingController();
   final _startAt = TextEditingController(); // yyyy-MM-ddTHH:mm
-  final _venueName = TextEditingController(); 
+  final _venueName = TextEditingController(); // fallback (auto dari dropdown)
   final _cost = TextEditingController(text: '0');
   final _prize = TextEditingController(text: '0');
   final _desc = TextEditingController();
@@ -28,8 +32,8 @@ class _VersusFormPageState extends State<VersusFormPage> {
   String _sport = 'futsal';
   String _category = 'league';
   bool _submitting = false;
+  bool _loadingEdit = false;
 
-  // ===== venue dropdown state =====
   bool _loadingVenues = true;
   String? _venueId; // uuid string
   List<_VenueItem> _venues = const [];
@@ -37,7 +41,47 @@ class _VersusFormPageState extends State<VersusFormPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadVenues());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadVenues();
+      if (widget.isEdit) await _loadForEdit();
+    });
+  }
+
+  Future<void> _loadForEdit() async {
+    if (widget.challengeId == null) return;
+    setState(() => _loadingEdit = true);
+    final request = context.read<CookieRequest>();
+    try {
+      final resp = await VersusApi.fetchChallengeDetail(request, widget.challengeId!);
+      final ch = Challenge.fromJson(resp as Map<String, dynamic>);
+
+      _title.text = ch.title;
+      _sport = ch.sport.isNotEmpty ? ch.sport : _sport;
+      _category = ch.matchCategory.isNotEmpty ? ch.matchCategory : _category;
+
+      if (ch.startAt != null && ch.startAt!.trim().isNotEmpty) {
+        try {
+          final dt = DateTime.parse(ch.startAt!).toLocal();
+          _startAt.text = _formatDt(dt);
+        } catch (_) {
+          _startAt.text = ch.startAt!;
+        }
+      }
+
+      _venueName.text = ch.venueName;
+      _venueId = ch.venueId.trim().isEmpty ? null : ch.venueId.trim();
+
+      _cost.text = ch.costPerPerson.toString();
+      _prize.text = ch.prizePool.toString();
+      _desc.text = ch.description;
+      _poster.text = ch.posterUrl;
+
+      if (mounted) setState(() {});
+    } catch (_) {
+      // ignore; user masih bisa edit manual
+    } finally {
+      if (mounted) setState(() => _loadingEdit = false);
+    }
   }
 
   @override
@@ -133,14 +177,29 @@ class _VersusFormPageState extends State<VersusFormPage> {
     final request = context.read<CookieRequest>();
 
     try {
-      final resp = await VersusApi.createChallenge(
+      final resp = widget.isEdit
+          ? await VersusApi.updateChallenge(
+              request,
+              id: widget.challengeId!,
+              title: _title.text.trim(),
+              sport: _sport,
+              matchCategory: _category,
+              startAt: _startAt.text.trim(),
+              venueName: _venueName.text.trim(),
+              venueId: _venueId,
+              costPerPerson: _cost.text.trim(),
+              prizePool: _prize.text.trim(),
+              description: _desc.text.trim(),
+              posterUrl: _poster.text.trim(),
+            )
+          : await VersusApi.createChallenge(
         request,
         title: _title.text.trim(),
         sport: _sport,
         matchCategory: _category,
         startAt: _startAt.text.trim(),
         venueName: _venueName.text.trim(), // fallback
-        venueId: _venueId, 
+        venueId: _venueId,
         costPerPerson: _cost.text.trim(),
         prizePool: _prize.text.trim(),
         description: _desc.text.trim(),
@@ -149,7 +208,7 @@ class _VersusFormPageState extends State<VersusFormPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(resp['message'] ?? 'Matchup dibuat')),
+        SnackBar(content: Text(resp['message'] ?? (widget.isEdit ? 'Matchup diupdate' : 'Matchup dibuat'))),
       );
 
       if (resp['ok'] == true || resp['status'] == 'success') {
@@ -158,7 +217,7 @@ class _VersusFormPageState extends State<VersusFormPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal membuat matchup: $e')),
+        SnackBar(content: Text('Gagal menyimpan matchup: $e')),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -171,7 +230,7 @@ class _VersusFormPageState extends State<VersusFormPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buat Matchup'),
+        title: Text(widget.isEdit ? 'Edit Matchup' : 'Buat Matchup'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -194,9 +253,21 @@ class _VersusFormPageState extends State<VersusFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Detail Matchup',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                Row(
+                  children: [
+                    Text(
+                      widget.isEdit ? 'Edit Detail Matchup' : 'Detail Matchup',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                    if (_loadingEdit) ...[
+                      const SizedBox(width: 10),
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ]
+                  ],
                 ),
                 const SizedBox(height: 14),
 
@@ -250,7 +321,9 @@ class _VersusFormPageState extends State<VersusFormPage> {
                 const SizedBox(height: 12),
 
                 DropdownButtonFormField<String>(
-                  value: (_venueId != null && _venueId!.isNotEmpty) ? _venueId : '',
+                  value: (_venueId != null && _venueId!.isNotEmpty && _venues.any((v) => v.id == _venueId))
+                      ? _venueId
+                      : '',
                   isExpanded: true,
                   decoration: _dec(
                     'Venue',
@@ -287,6 +360,7 @@ class _VersusFormPageState extends State<VersusFormPage> {
                           final id = (val ?? '').trim();
                           setState(() => _venueId = id.isEmpty ? null : id);
 
+                          // isi fallback venue_name otomatis dari pilihan
                           if (id.isEmpty) {
                             _venueName.text = '';
                           } else {

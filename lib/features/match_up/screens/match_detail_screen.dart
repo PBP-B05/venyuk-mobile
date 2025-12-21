@@ -44,6 +44,12 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
     return "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/$rawUrl";
   }
 
+  int parseInt(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    return int.tryParse(v.toString()) ?? 0;
+  }
+
   Future<void> fetchDetail() async {
     final request = context.read<CookieRequest>();
     final String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/${widget.matchId}/json/';
@@ -52,9 +58,9 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       final response = await request.get(url);
       setState(() {
         matchData = response['match'];
-        participants = response['participants'];
-        isMyMatch = response['is_my_match'];
-        isJoined = response['is_joined'];
+        participants = response['participants'] ?? [];
+        isMyMatch = response['is_my_match'] ?? false;
+        isJoined = response['is_joined'] ?? false;
         isLoading = false;
       });
     } catch (e) {
@@ -120,12 +126,16 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
     if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     if (matchData == null) return const Scaffold(body: Center(child: Text("Data error.")));
 
-    final venueName = matchData!['venue_name'];
-    final creatorName = matchData!['creator_username'];
-    final difficulty = matchData!['difficulty_level'];
-    final startTime = DateTime.parse(matchData!['start_time']);
+    final venueName = matchData!['venue_name'] ?? "";
+    final venueCity = matchData!['venue_city'] ?? matchData!['venue_location'] ?? "";
+    final creatorName = matchData!['creator_username'] ?? "";
+    final difficulty = matchData!['difficulty_level'] ?? "";
+    final startTime = DateTime.tryParse(matchData!['start_time'] ?? "") ?? DateTime.now();
     final timeString = DateFormat('HH:mm').format(startTime);
     final dateString = DateFormat('EEEE, d MMM yyyy').format(startTime);
+
+    final slotTotal = parseInt(matchData!['slot_total']);
+    final slotTerisi = parseInt(matchData!['slot_terisi']);
 
     return Scaffold(
       extendBodyBehindAppBar: true, 
@@ -178,10 +188,19 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                           children: [
                             Text(venueName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
+
+                            // NEW: show location
+                            if (venueCity != null && venueCity.toString().isNotEmpty)
+                              _buildDetailRow("📍 Lokasi:", venueCity.toString()),
+
                             _buildDetailRow("📅 Tanggal:", dateString), 
                             _buildDetailRow("⏰ Waktu:", timeString),
                             _buildDetailRow("👤 Host:", creatorName),
                             _buildDetailRow("⭐ Level:", difficulty),
+
+                            // NEW: show quota / participants count
+                            _buildDetailRow("👥 Kuota:", "$slotTerisi / $slotTotal"),
+
                             const Divider(height: 30),
                             
                             const Text("👥 Peserta", style: TextStyle(fontWeight: FontWeight.bold)),
@@ -226,7 +245,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         children: [
           Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(width: 8),
-          Text(value),
+          Flexible(child: Text(value)),
         ],
       ),
     );
@@ -312,7 +331,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       );
     }
 
-    final isFull = matchData!['slot_terisi'] >= matchData!['slot_total'];
+    final isFull = parseInt(matchData!['slot_terisi']) >= parseInt(matchData!['slot_total']);
     if (isFull) {
        return Container(
         padding: const EdgeInsets.all(16),

@@ -14,15 +14,15 @@ class _MainNavState extends State<MainNav> {
   int _selectedIndex = 0; 
 
   final List<Widget> _pages = [
-    const Center(child: Text("Halaman Venue / Booking (Belum Diimplementasi)")),
+    const VenuePage(),
     
     const PromoPage(),
     
     const ShopPage(),
     
-    const Center(child: Text("Halaman Match Up & versus (Belum Diimplementasi)")),
+    const MatchUpScreen(),
     
-    const Center(child: Text("Halaman Artikel (Belum Diimplementasi)")),
+    const BlogListPage(),
   ];
 
   void _onItemTapped(int index) {

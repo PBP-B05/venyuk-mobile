@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:venyuk_mobile/theme/app_colors.dart';
 import '../models/venue_model.dart';
 import '../services/venue_service.dart';
 import '../widgets/venue_card.dart';
+import '../widgets/venue_drawer.dart';
 import 'booking_page.dart';
 
 class VenuePage extends StatefulWidget {
@@ -41,7 +43,9 @@ class _VenuePageState extends State<VenuePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Booking Venue'),
+        elevation: 0,
       ),
+      drawer: const VenueDrawer(),
       body: Column(
         children: [
           // 🔍 SEARCH BAR
@@ -53,6 +57,13 @@ class _VenuePageState extends State<VenuePage> {
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppColors.primaryRed,
+                    width: 2,
+                  ),
                 ),
               ),
               onSubmitted: (value) {
@@ -70,22 +81,72 @@ class _VenuePageState extends State<VenuePage> {
                   child: DropdownButtonFormField<String?>(
                     initialValue: _selectedCategory,
                     hint: const Text('Kategori'),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                     items: const [
-                      DropdownMenuItem<String?>(value: null, child: Text('All Category')),
-                      DropdownMenuItem(value: 'futsal', child: Text('Futsal')),
-                      DropdownMenuItem(value: 'basketball', child: Text('Basketball')),
-                      DropdownMenuItem(value: 'badminton', child: Text('Badminton')),
-                      DropdownMenuItem(value: 'mini soccer', child: Text('Mini Soccer')),
-                      DropdownMenuItem(value: 'tennis', child: Text('Tennis')),
-                      DropdownMenuItem(value: 'padel', child: Text('Padel')),
-                      DropdownMenuItem(value: 'voli', child: Text('Voli')),
-                      DropdownMenuItem(value: 'biliard', child: Text('Biliard')),
-                      DropdownMenuItem(value: 'golf', child: Text('Golf')),
-                      DropdownMenuItem(value: 'shooting', child: Text('Shooting')),
-                      DropdownMenuItem(value: 'tennis meja', child: Text('Tennis Meja')),
-                      DropdownMenuItem(value: 'sepak bola', child: Text('Sepak Bola')),
-                      DropdownMenuItem(value: 'pickle ball', child: Text('Pickle Ball')),
-                      DropdownMenuItem(value: 'squash', child: Text('Squash')),
+                      DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All Category'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'futsal',
+                        child: Text('Futsal'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'basketball',
+                        child: Text('Basketball'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'badminton',
+                        child: Text('Badminton'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'mini soccer',
+                        child: Text('Mini Soccer'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'tennis',
+                        child: Text('Tennis'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'padel',
+                        child: Text('Padel'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'voli',
+                        child: Text('Voli'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'biliard',
+                        child: Text('Biliard'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'golf',
+                        child: Text('Golf'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'shooting',
+                        child: Text('Shooting'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'tennis meja',
+                        child: Text('Tennis Meja'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'sepak bola',
+                        child: Text('Sepak Bola'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'pickle ball',
+                        child: Text('Pickle Ball'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'squash',
+                        child: Text('Squash'),
+                      ),
                     ],
                     onChanged: (value) {
                       _selectedCategory = value;
@@ -97,8 +158,11 @@ class _VenuePageState extends State<VenuePage> {
                 Expanded(
                   child: TextField(
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Min Harga',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onSubmitted: (value) {
                       _minPrice = int.tryParse(value);
@@ -110,8 +174,11 @@ class _VenuePageState extends State<VenuePage> {
                 Expanded(
                   child: TextField(
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Max Harga',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onSubmitted: (value) {
                       _maxPrice = int.tryParse(value);
@@ -130,28 +197,83 @@ class _VenuePageState extends State<VenuePage> {
               future: _venuesFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primaryRed,
+                      ),
+                    ),
+                  );
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text(snapshot.error.toString()));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red[300],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Terjadi Kesalahan',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          snapshot.error.toString(),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 final venues = snapshot.data!;
 
                 if (venues.isEmpty) {
-                  return const Center(
-                    child: Text('Belum ada venue tersedia'),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.location_off_outlined,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Belum ada venue tersedia',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Coba ubah filter pencarian Anda',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                        ),
+                      ],
+                    ),
                   );
                 }
 
                 return GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 1,
-                    childAspectRatio: 2.0,
+                    childAspectRatio: 1.8,
                     mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
                   ),
                   itemCount: venues.length,
                   itemBuilder: (context, index) {

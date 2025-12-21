@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/features/ven_shop/screens/shop_page.dart';
 import 'package:venyuk_mobile/global/widget/chatbot.dart'; // Pastikan path ini benar
+import 'package:venyuk_mobile/features/promo/screens/promo_page.dart';
 
 class MainNav extends StatefulWidget {
   const MainNav({super.key});
@@ -15,7 +16,7 @@ class _MainNavState extends State<MainNav> {
   final List<Widget> _pages = [
     const Center(child: Text("Halaman Venue / Booking (Belum Diimplementasi)")),
     
-    const Center(child: Text("Halaman Promo (Belum Diimplementasi)")),
+    const PromoPage(),
     
     const ShopPage(),
     

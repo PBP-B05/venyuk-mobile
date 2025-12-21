@@ -1,15 +1,8 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
-import '../models/versus_model.dart';
-
-/// Base URL backend
-const String _webBase = 'http://127.0.0.1:8000';
-const String _emulatorBase = 'http://10.0.2.2:8000';
-String get baseUrl => kIsWeb ? _webBase : _emulatorBase;
+import '../services/versus_api.dart';
 
 class VersusFormPage extends StatefulWidget {
   const VersusFormPage({super.key});
@@ -21,122 +14,86 @@ class VersusFormPage extends StatefulWidget {
 class _VersusFormPageState extends State<VersusFormPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _titleController = TextEditingController();
-  final _venueNameController = TextEditingController();
-  final _costController = TextEditingController(text: '0');
-  final _prizeController = TextEditingController(text: '0');
-  final _descController = TextEditingController();
-  final _posterController = TextEditingController();
+  final _title = TextEditingController();
+  final _startAt = TextEditingController(); // yyyy-MM-ddTHH:mm
+  final _venueName = TextEditingController();
+  final _cost = TextEditingController(text: '0');
+  final _prize = TextEditingController(text: '0');
+  final _desc = TextEditingController();
+  final _poster = TextEditingController();
 
-  String _selectedSport = 'futsal';
-  String _selectedCategory = 'league';
-  DateTime? _startAt;
+  String _sport = 'futsal';
+  String _category = 'league';
   bool _submitting = false;
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _venueNameController.dispose();
-    _costController.dispose();
-    _prizeController.dispose();
-    _descController.dispose();
-    _posterController.dispose();
+    _title.dispose();
+    _startAt.dispose();
+    _venueName.dispose();
+    _cost.dispose();
+    _prize.dispose();
+    _desc.dispose();
+    _poster.dispose();
     super.dispose();
   }
 
+  String _two(int v) => v.toString().padLeft(2, '0');
+  String _formatDt(DateTime dt) => '${dt.year}-${_two(dt.month)}-${_two(dt.day)}T${_two(dt.hour)}:${_two(dt.minute)}';
+
   Future<void> _pickDateTime() async {
     final now = DateTime.now();
-
-    final date = await showDatePicker(
+    final d = await showDatePicker(
       context: context,
-      initialDate: _startAt ?? now,
       firstDate: now.subtract(const Duration(days: 1)),
       lastDate: now.add(const Duration(days: 365)),
+      initialDate: now,
     );
-    if (date == null) return;
+    if (d == null) return;
 
-    final time = await showTimePicker(
+    final t = await showTimePicker(
       context: context,
-      initialTime: _startAt != null
-          ? TimeOfDay.fromDateTime(_startAt!)
-          : const TimeOfDay(hour: 20, minute: 0),
+      initialTime: TimeOfDay.fromDateTime(now),
     );
-    if (time == null) return;
+    if (t == null) return;
 
-    setState(() {
-      _startAt = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        time.hour,
-        time.minute,
-      );
-    });
-  }
-
-  String _formatDateTime(DateTime? dt) {
-    if (dt == null) return 'Pilih waktu mulai';
-    return '${dt.day.toString().padLeft(2, '0')}-'
-        '${dt.month.toString().padLeft(2, '0')}-'
-        '${dt.year} '
-        '${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}';
+    final dt = DateTime(d.year, d.month, d.day, t.hour, t.minute);
+    _startAt.text = _formatDt(dt);
+    setState(() {});
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_startAt == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Silakan pilih waktu mulai.')),
-      );
-      return;
-    }
 
     setState(() => _submitting = true);
+    final request = context.read<CookieRequest>();
 
     try {
-      final uri = Uri.parse('$baseUrl/versus/api/challenges/create/');
-
-      final body = jsonEncode({
-        'title': _titleController.text.trim(),
-        'sport': _selectedSport,
-        'match_category': _selectedCategory,
-        'start_at': _startAt!.toIso8601String(),
-        // ⬇️ hanya kirim venue_name, TIDAK ada field "venue"
-        'venue_name': _venueNameController.text.trim(),
-        'cost_per_person': int.tryParse(_costController.text) ?? 0,
-        'prize_pool': int.tryParse(_prizeController.text) ?? 0,
-        'description': _descController.text.trim(),
-        'poster_url': _posterController.text.trim(),
-      });
-
-      final resp = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
+      final resp = await VersusApi.createChallenge(
+        request,
+        title: _title.text.trim(),
+        sport: _sport,
+        matchCategory: _category,
+        startAt: _startAt.text.trim(),
+        venueName: _venueName.text.trim(),
+        costPerPerson: _cost.text.trim(),
+        prizePool: _prize.text.trim(),
+        description: _desc.text.trim(),
+        posterUrl: _poster.text.trim(),
       );
-
-      if (resp.statusCode != 200) {
-        throw Exception(
-            'Server error: ${resp.statusCode} ${resp.reasonPhrase}');
-      }
-
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      if (data['ok'] != true) {
-        throw Exception(data['message'] ?? 'Gagal membuat matchup');
-      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(data['message'] ?? 'Matchup berhasil dibuat.'),
-        ),
+        SnackBar(content: Text(resp['message'] ?? 'Matchup dibuat')),
       );
-      Navigator.pop(context, true);
+
+      if (resp['ok'] == true || resp['status'] == 'success') {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan matchup: $e')),
+        SnackBar(content: Text('Gagal membuat matchup: $e')),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -146,223 +103,102 @@ class _VersusFormPageState extends State<VersusFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1FF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F1FF),
-        elevation: 0,
-        title: const Text('Buat Matchup'),
-      ),
+      appBar: AppBar(title: const Text('Buat Matchup')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.all(16),
         child: Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Match Title',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
                   TextFormField(
-                    controller: _titleController,
+                    controller: _title,
+                    decoration: const InputDecoration(labelText: 'Judul'),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Judul wajib' : null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<String>(
+                    value: _sport,
+                    decoration: const InputDecoration(labelText: 'Sport'),
+                    items: const [
+                      DropdownMenuItem(value: 'futsal', child: Text('Futsal')),
+                      DropdownMenuItem(value: 'sepak bola', child: Text('Sepak Bola')),
+                      DropdownMenuItem(value: 'basketball', child: Text('Basketball')),
+                      DropdownMenuItem(value: 'badminton', child: Text('Badminton')),
+                      DropdownMenuItem(value: 'voli', child: Text('Voli')),
+                    ],
+                    onChanged: (v) => setState(() => _sport = v ?? _sport),
+                  ),
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<String>(
+                    value: _category,
+                    decoration: const InputDecoration(labelText: 'Match Category'),
+                    items: const [
+                      DropdownMenuItem(value: 'league', child: Text('League')),
+                      DropdownMenuItem(value: 'ro16', child: Text('RO16')),
+                      DropdownMenuItem(value: 'quarter_final', child: Text('Quarter Final')),
+                      DropdownMenuItem(value: 'semi_final', child: Text('Semi Final')),
+                      DropdownMenuItem(value: 'cup_final', child: Text('Cup Final')),
+                    ],
+                    onChanged: (v) => setState(() => _category = v ?? _category),
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextFormField(
+                    controller: _startAt,
+                    readOnly: true,
                     decoration: const InputDecoration(
-                      hintText: 'Contoh: Friendly Match Minggu Malam',
+                      labelText: 'Start At (yyyy-MM-ddTHH:mm)',
+                      suffixIcon: Icon(Icons.calendar_month),
                     ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'Kategori',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
-                  DropdownButtonFormField<String>(
-                    value: _selectedCategory,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'league',
-                        child: Text('League'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'friendly',
-                        child: Text('Friendly'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'knockout',
-                        child: Text('Knockout'),
-                      ),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) setState(() => _selectedCategory = v);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'Olahraga',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
-                  DropdownButtonFormField<String>(
-                    value: _selectedSport,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'futsal',
-                        child: Text('Futsal'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'sepak bola',
-                        child: Text('Sepak Bola'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'basketball',
-                        child: Text('Basketball'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'badminton',
-                        child: Text('Badminton'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'voli',
-                        child: Text('Voli'),
-                      ),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) setState(() => _selectedSport = v);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'Waktu mulai',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
-                  InkWell(
                     onTap: _pickDateTime,
-                    borderRadius: BorderRadius.circular(8),
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.calendar_today, size: 18),
-                          const SizedBox(width: 8),
-                          Text(_formatDateTime(_startAt)),
-                        ],
-                      ),
-                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Waktu wajib' : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  // ⬇️ Venue kembali ke TextFormField biasa
-                  const Text(
-                    'Venue',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
                   TextFormField(
-                    controller: _venueNameController,
-                    decoration: const InputDecoration(
-                      hintText: 'Nama venue (mis. Active Zone)',
-                    ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
+                    controller: _venueName,
+                    decoration: const InputDecoration(labelText: 'Venue Name (opsional)'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  const Text(
-                    'Harga (per orang)',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
                   TextFormField(
-                    controller: _costController,
+                    controller: _cost,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: '0 jika gratis',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Cost per person'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  const Text(
-                    'Prize Pool (Rp)',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
                   TextFormField(
-                    controller: _prizeController,
+                    controller: _prize,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: '0 jika tidak ada hadiah',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Prize pool'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  const Text(
-                    'Deskripsi',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
                   TextFormField(
-                    controller: _descController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: 'Deskripsi singkat match (opsional)',
-                    ),
+                    controller: _desc,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: const InputDecoration(labelText: 'Description'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  const Text(
-                    'Poster Image (URL)',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
                   TextFormField(
-                    controller: _posterController,
-                    decoration: const InputDecoration(
-                      hintText: 'https://contoh.com/poster.jpg (opsional)',
-                    ),
+                    controller: _poster,
+                    decoration: const InputDecoration(labelText: 'Poster URL (opsional)'),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 18),
 
-                  Align(
-                    alignment: Alignment.centerRight,
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _submitting ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD84040),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 10,
-                        ),
-                      ),
-                      child: _submitting
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Text(
-                              'Buat Matchup',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                      child: Text(_submitting ? 'Menyimpan...' : 'Buat Matchup'),
                     ),
                   ),
                 ],

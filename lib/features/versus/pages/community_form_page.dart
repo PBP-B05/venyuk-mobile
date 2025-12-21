@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/community_model.dart';
 
 class CommunityFormPage extends StatefulWidget {
-  final Community? community; // null = create, not null = edit
+  final Community? community; // null=create, not null=edit
 
   const CommunityFormPage({super.key, this.community});
 
@@ -32,10 +32,8 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: widget.community?.name ?? '');
-    _bioController =
-        TextEditingController(text: widget.community?.bio ?? '');
+    _nameController = TextEditingController(text: widget.community?.name ?? '');
+    _bioController = TextEditingController(text: widget.community?.bio ?? '');
     _selectedSport = widget.community?.primarySport ?? 'futsal';
   }
 
@@ -49,16 +47,14 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _submitting = true;
-    });
+    setState(() => _submitting = true);
 
     final request = context.read<CookieRequest>();
 
     try {
       Map<String, dynamic> resp;
+
       if (widget.community == null) {
-        // CREATE
         resp = await CommunityOverview.create(
           request,
           name: _nameController.text.trim(),
@@ -66,7 +62,6 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
           bio: _bioController.text.trim(),
         );
       } else {
-        // UPDATE
         resp = await CommunityOverview.update(
           request,
           id: widget.community!.id,
@@ -77,16 +72,13 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            resp['message'] ??
-                (widget.community == null
-                    ? 'Community berhasil dibuat'
-                    : 'Community berhasil diupdate'),
-          ),
-        ),
-      );
+
+      final msg = resp['message'] ??
+          (widget.community == null
+              ? 'Community berhasil dibuat.'
+              : 'Community berhasil diupdate.');
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
       if (resp['ok'] == true || resp['status'] == 'success') {
         Navigator.pop(context, true);
@@ -94,16 +86,10 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal menyimpan community: $e'),
-        ),
+        SnackBar(content: Text('Gagal menyimpan community: $e')),
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _submitting = false;
-        });
-      }
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
@@ -121,10 +107,9 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -132,9 +117,7 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
                 children: [
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nama Community',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Nama Community'),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Nama tidak boleh kosong';
@@ -145,9 +128,7 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedSport,
-                    decoration: const InputDecoration(
-                      labelText: 'Olahraga utama',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Olahraga utama'),
                     items: _sportChoices
                         .map(
                           (e) => DropdownMenuItem<String>(
@@ -157,19 +138,13 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
                         )
                         .toList(),
                     onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedSport = value;
-                        });
-                      }
+                      if (value != null) setState(() => _selectedSport = value);
                     },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _bioController,
-                    decoration: const InputDecoration(
-                      labelText: 'Deskripsi / Bio',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Deskripsi / Bio'),
                     minLines: 3,
                     maxLines: 5,
                   ),
@@ -188,7 +163,7 @@ class _CommunityFormPageState extends State<CommunityFormPage> {
                             : (isEdit ? 'Simpan Perubahan' : 'Buat Community'),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

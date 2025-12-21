@@ -1,10 +1,11 @@
 // lib/features/versus/models/community_model.dart
-import 'package:flutter/foundation.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
-const String _webBase = 'http://127.0.0.1:8000';
-const String _emulatorBase = 'http://10.0.2.2:8000';
-String get baseUrl => kIsWeb ? _webBase : _emulatorBase;
+/// NOTE:
+/// Kamu minta pakai 127.0.0.1 (localhost) saja.
+/// Kalau kamu run di Android Emulator dan API gak ke-hit,
+/// ganti jadi: http://10.0.2.2:8000
+const String baseUrl = 'http://127.0.0.1:8000';
 
 class Community {
   final int id;
@@ -17,7 +18,7 @@ class Community {
   final bool isOwner;
   final bool isMember;
 
-  Community({
+  const Community({
     required this.id,
     required this.name,
     required this.primarySport,
@@ -30,39 +31,47 @@ class Community {
   });
 
   factory Community.fromJson(Map<String, dynamic> json) {
-    // Kalau backend return { "community": {...} }
+    // support:
+    // - { "community": {...} }
+    // - { ...fields... }
     final Map<String, dynamic> data =
-        json['community'] is Map<String, dynamic> ? json['community'] : json;
+        (json['community'] is Map<String, dynamic>) ? json['community'] : json;
 
     return Community(
-      id: data['id'] as int,
-      name: data['name'] ?? '',
-      primarySport: data['primary_sport'] ?? '',
-      primarySportLabel: data['primary_sport_label'] ?? '',
-      bio: data['bio'] ?? '',
-      ownerUsername: data['owner_username'] ?? '',
-      totalMembers: data['total_members'] ?? 0,
-      isOwner: data['is_owner'] ?? false,
-      isMember: data['is_member'] ?? false,
+      id: (data['id'] ?? 0) is int ? data['id'] : int.parse('${data['id']}'),
+      name: (data['name'] ?? '').toString(),
+      primarySport: (data['primary_sport'] ?? '').toString(),
+      primarySportLabel: (data['primary_sport_label'] ?? '').toString(),
+      bio: (data['bio'] ?? '').toString(),
+      ownerUsername: (data['owner_username'] ?? '').toString(),
+      totalMembers: (data['total_members'] ?? 0) is int
+          ? data['total_members']
+          : int.tryParse('${data['total_members']}') ?? 0,
+      isOwner: (data['is_owner'] ?? false) == true,
+      isMember: (data['is_member'] ?? false) == true,
     );
   }
 }
 
 /// Response untuk halaman list:
-/// - myCurrent = komunitas yang sedang kita ikuti (atau null)
-/// - communities = semua komunitas (list)
+/// backend kamu return:
+/// {
+///   "ok": true,
+///   "my_current": {...} | null,
+///   "communities": [ {...}, {...} ]
+/// }
 class CommunityOverview {
   final Community? myCurrent;
   final List<Community> communities;
 
-  CommunityOverview({
+  const CommunityOverview({
     required this.myCurrent,
     required this.communities,
   });
 
   factory CommunityOverview.fromJson(dynamic raw) {
-    // Support 2 bentuk:
-    // 1) [ {...}, {...} ]              (simple list)
+    // support 2 bentuk:
+    // 1) [ {...}, {...} ]  (kalau backend suatu saat return list doang)
     // 2) { ok, my_current, communities }
     if (raw is List) {
       final list = raw
@@ -73,37 +82,47 @@ class CommunityOverview {
 
     if (raw is Map<String, dynamic>) {
       final myCurrentJson = raw['my_current'];
-      final myCurrent = myCurrentJson == null
+      final Community? myCurrent = (myCurrentJson == null)
           ? null
           : Community.fromJson(myCurrentJson as Map<String, dynamic>);
+
       final listJson = raw['communities'] ?? raw['data'] ?? [];
       final list = (listJson as List)
           .map((e) => Community.fromJson(e as Map<String, dynamic>))
           .toList();
+
       return CommunityOverview(myCurrent: myCurrent, communities: list);
     }
 
-    throw Exception('Format response community tidak dikenali');
+    throw Exception('Format response community tidak dikenali: ${raw.runtimeType}');
   }
+
+  // ==========================
+  // API CALLS (MATCH BACKEND)
+  // ==========================
 
   /// GET /versus/api/communities/
   static Future<CommunityOverview> fetch(CookieRequest request) async {
     final resp = await request.get('$baseUrl/versus/api/communities/');
-    // resp bisa List atau Map
     return CommunityOverview.fromJson(resp);
   }
 
   /// GET /versus/api/communities/<id>/
-  static Future<Community> fetchDetail(
-      CookieRequest request, int id) async {
-    final resp =
-        await request.get('$baseUrl/versus/api/communities/$id/');
-    // Bisa berupa { ..field.. } atau { ok, community: {...} }
-    if (resp is Map<String, dynamic> &&
-        resp.containsKey('ok') &&
-        resp['ok'] == false) {
-      throw Exception(resp['message'] ?? 'Gagal memuat detail community');
+  /// backend kamu return:
+  /// { ok: true, community: {...}, challenges_hosted:[], challenges_joined:[] }
+  static Future<Community> fetchDetail(CookieRequest request, int id) async {
+    final resp = await request.get('$baseUrl/versus/api/communities/$id/');
+
+    if (resp is Map<String, dynamic>) {
+      if (resp['ok'] == false) {
+        throw Exception(resp['message'] ?? 'Gagal memuat detail community');
+      }
+      if (resp['community'] is Map<String, dynamic>) {
+        return Community.fromJson(resp['community'] as Map<String, dynamic>);
+      }
     }
+
+    // fallback kalau backend return field langsung
     return Community.fromJson(resp as Map<String, dynamic>);
   }
 
@@ -122,7 +141,7 @@ class CommunityOverview {
         'bio': bio,
       },
     );
-    return resp as Map<String, dynamic>;
+    return (resp as Map).cast<String, dynamic>();
   }
 
   /// POST /versus/api/communities/<id>/update/
@@ -141,27 +160,31 @@ class CommunityOverview {
         'bio': bio,
       },
     );
-    return resp as Map<String, dynamic>;
+    return (resp as Map).cast<String, dynamic>();
   }
 
   /// POST /versus/api/communities/<id>/delete/
   static Future<Map<String, dynamic>> delete(
-      CookieRequest request, int id) async {
+    CookieRequest request,
+    int id,
+  ) async {
     final resp = await request.post(
       '$baseUrl/versus/api/communities/$id/delete/',
       {},
     );
-    return resp as Map<String, dynamic>;
+    return (resp as Map).cast<String, dynamic>();
   }
 
   /// POST /versus/api/communities/<id>/join/
   static Future<Map<String, dynamic>> join(
-      CookieRequest request, int id) async {
+    CookieRequest request,
+    int id,
+  ) async {
     final resp = await request.post(
       '$baseUrl/versus/api/communities/$id/join/',
       {},
     );
-    return resp as Map<String, dynamic>;
+    return (resp as Map).cast<String, dynamic>();
   }
 
   /// POST /versus/api/communities/leave/
@@ -170,6 +193,6 @@ class CommunityOverview {
       '$baseUrl/versus/api/communities/leave/',
       {},
     );
-    return resp as Map<String, dynamic>;
+    return (resp as Map).cast<String, dynamic>();
   }
 }

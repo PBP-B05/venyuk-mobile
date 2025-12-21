@@ -7,106 +7,100 @@ import '../models/community_model.dart';
 import 'community_form_page.dart';
 
 class CommunityDetailPage extends StatefulWidget {
-  final int communityId;
+  final int id;
 
-  const CommunityDetailPage({super.key, required this.communityId});
+  const CommunityDetailPage({super.key, required this.id});
 
   @override
   State<CommunityDetailPage> createState() => _CommunityDetailPageState();
 }
 
 class _CommunityDetailPageState extends State<CommunityDetailPage> {
-  late Future<Community> _futureDetail;
+  late Future<Community> _future;
 
   @override
   void initState() {
     super.initState();
-    final request = context.read<CookieRequest>();
-    _futureDetail =
-        CommunityOverview.fetchDetail(request, widget.communityId);
+    _refresh();
   }
 
-  Future<void> _reload() async {
+  void _refresh() {
     final request = context.read<CookieRequest>();
-    setState(() {
-      _futureDetail =
-          CommunityOverview.fetchDetail(request, widget.communityId);
-    });
+    _future = CommunityOverview.fetchDetail(request, widget.id);
   }
 
-  Future<void> _join(Community comm) async {
+  Future<void> _handleJoin() async {
     final request = context.read<CookieRequest>();
-    final resp = await CommunityOverview.join(request, comm.id);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(resp['message'] ?? 'Gagal join community')),
-    );
-    if (resp['ok'] == true || resp['status'] == 'success') {
-      await _reload();
-      // beri tahu halaman sebelumnya bahwa ada perubahan
-      Navigator.pop(context, true);
+    try {
+      final resp = await CommunityOverview.join(request, widget.id);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(resp['message'] ?? 'Berhasil join community.')),
+      );
+
+      if (resp['ok'] == true || resp['status'] == 'success') {
+        setState(_refresh);
+        Navigator.pop(context, true); // refresh list page juga
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal join: $e')),
+      );
     }
   }
 
-  Future<void> _leave() async {
-    final request = context.read<CookieRequest>();
-    final resp = await CommunityOverview.leave(request);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(resp['message'] ?? 'Gagal leave community')),
+  Future<void> _handleEdit(Community c) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CommunityFormPage(community: c)),
     );
-    if (resp['ok'] == true || resp['status'] == 'success') {
-      Navigator.pop(context, true);
+
+    if (result == true) {
+      setState(_refresh);
+      Navigator.pop(context, true); // refresh list page juga
     }
   }
 
-  Future<void> _delete(Community comm) async {
-    final confirm = await showDialog<bool>(
+  Future<void> _handleDelete() async {
+    final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Hapus community'),
-        content: Text(
-            "Yakin ingin menghapus community '${comm.name}'? Tindakan ini tidak dapat dibatalkan."),
+        title: const Text('Hapus Community?'),
+        content: const Text('Aksi ini tidak bisa dibatalkan.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Batal'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: const Color(0xFFD84040),
-            ),
             child: const Text('Hapus'),
           ),
         ],
       ),
     );
 
-    if (confirm != true) return;
+    if (ok != true) return;
 
     final request = context.read<CookieRequest>();
-    final resp = await CommunityOverview.delete(request, comm.id);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(resp['message'] ?? 'Gagal menghapus community')),
-    );
-    if (resp['ok'] == true || resp['status'] == 'success') {
-      Navigator.pop(context, true);
-    }
-  }
+    try {
+      final resp = await CommunityOverview.delete(request, widget.id);
 
-  void _edit(Community comm) async {
-    final updated = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CommunityFormPage(community: comm),
-      ),
-    );
-    if (updated == true) {
-      await _reload();
-      Navigator.pop(context, true); // beritahu list untuk refresh
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(resp['message'] ?? 'Community dihapus.')),
+      );
+
+      if (resp['ok'] == true || resp['status'] == 'success') {
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal hapus: $e')),
+      );
     }
   }
 
@@ -120,117 +114,100 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
         title: const Text('Community Detail'),
       ),
       body: FutureBuilder<Community>(
-        future: _futureDetail,
+        future: _future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          if (snapshot.hasError || !snapshot.hasData) {
-            return Center(
-              child: Text(
-                'Gagal memuat detail community:\n${snapshot.error}',
-                textAlign: TextAlign.center,
-              ),
-            );
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          final comm = snapshot.data!;
+          final c = snapshot.data!;
+          final isOwner = c.isOwner;
+          final isMember = c.isMember;
 
-          return SingleChildScrollView(
+          return ListView(
             padding: const EdgeInsets.all(16),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      comm.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+            children: [
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        c.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${comm.primarySportLabel} • ${comm.totalMembers} members',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade700,
+                      const SizedBox(height: 8),
+                      Text('Sport: ${c.primarySportLabel}'),
+                      Text('Owner: ${c.ownerUsername}'),
+                      Text('Members: ${c.totalMembers}'),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Bio',
+                        style: TextStyle(fontWeight: FontWeight.w800),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Owner: ${comm.ownerUsername}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Deskripsi',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      comm.bio.isEmpty
-                          ? 'Belum ada deskripsi.'
-                          : comm.bio,
-                    ),
-                    const SizedBox(height: 24),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (comm.isOwner)
-                          ElevatedButton.icon(
-                            onPressed: () => _edit(comm),
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Edit'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4B7BEC),
-                            ),
-                          ),
-                        if (comm.isOwner)
-                          ElevatedButton.icon(
-                            onPressed: () => _delete(comm),
-                            icon: const Icon(Icons.delete),
-                            label: const Text('Delete'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD84040),
-                            ),
-                          ),
-                        if (!comm.isOwner && comm.isMember)
-                          ElevatedButton.icon(
-                            onPressed: _leave,
-                            icon: const Icon(Icons.logout),
-                            label: const Text('Leave'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD84040),
-                            ),
-                          ),
-                        if (!comm.isMember)
-                          ElevatedButton.icon(
-                            onPressed: () => _join(comm),
-                            icon: const Icon(Icons.group_add),
-                            label: const Text('Join'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD84040),
-                            ),
-                          ),
-                      ],
-                    )
-                  ],
+                      const SizedBox(height: 6),
+                      Text(c.bio.isEmpty ? '-' : c.bio),
+                    ],
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 16),
+
+              if (isOwner) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _handleEdit(c),
+                        child: const Text('Edit'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _handleDelete,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD84040),
+                        ),
+                        child: const Text('Delete'),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else if (!isMember) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _handleJoin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD84040),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Join Community'),
+                  ),
+                ),
+              ] else ...[
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Kamu sudah tergabung di community ini.',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
+            ],
           );
         },
       ),

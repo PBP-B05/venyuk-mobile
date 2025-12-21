@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-import 'features/versus/pages/versus_list_page.dart';
+import 'auth/login.dart'; // <--- dari root lib
 
 void main() {
   runApp(
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const VersusListPage(),
+      home: const LoginPage(), // <--- start di login
     );
   }
 }

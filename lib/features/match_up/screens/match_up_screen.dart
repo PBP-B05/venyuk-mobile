@@ -31,7 +31,7 @@ class _MatchUpScreenState extends State<MatchUpScreen> {
   // --- FETCH DATA FROM DJANGO ---
   Future<List<Match>> fetchMatches(CookieRequest request) async {
     // URL Endpoint Django
-    String url = 'http://localhost:8000/match_up/?format=json';
+    String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/?format=json';
     
     // 1. Pasang Filter Pencarian & Kategori
     if (_searchQuery.isNotEmpty) url += '&city=$_searchQuery';

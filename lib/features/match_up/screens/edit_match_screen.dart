@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,7 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
   // Data Sources
   List<dynamic> venues = [];
   List<dynamic> participants = [];
-  
+
   // Form Controllers & State
   String? selectedVenueId;
   TextEditingController slotController = TextEditingController();
@@ -36,58 +37,136 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
     });
   }
 
+  // Helpers to safely extract venue name / pk from various JSON shapes
+  String? _venueNameOf(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      if (v['fields'] is Map && v['fields']['name'] != null) return v['fields']['name'].toString();
+      if (v['name'] != null) return v['name'].toString();
+      if (v['title'] != null) return v['title'].toString();
+      if (v['venue_name'] != null) return v['venue_name'].toString();
+    }
+    return null;
+  }
+
+  String? _venuePkOf(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      if (v['pk'] != null) return v['pk'].toString();
+      if (v['id'] != null) return v['id'].toString();
+      if (v['venue_id'] != null) return v['venue_id'].toString();
+    }
+    return null;
+  }
+
   // --- 1. LOAD DATA AWAL (Match Detail & List Venue) ---
   Future<void> loadInitialData() async {
     final request = context.read<CookieRequest>();
     try {
       // Fetch List Venue (Buat Dropdown)
-      final venueRes = await request.get('http://localhost:8000/json/');
-      
+      final rawVenueRes = await request.get('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/json/');
+
+      // Normalize venues into a List<dynamic>
+      List<dynamic> parsedVenues = [];
+      if (rawVenueRes == null) {
+        parsedVenues = [];
+      } else if (rawVenueRes is List) {
+        parsedVenues = rawVenueRes;
+      } else if (rawVenueRes is Map) {
+        if (rawVenueRes['results'] is List) parsedVenues = List<dynamic>.from(rawVenueRes['results']);
+        else if (rawVenueRes['venues'] is List) parsedVenues = List<dynamic>.from(rawVenueRes['venues']);
+        else if (rawVenueRes['data'] is List) parsedVenues = List<dynamic>.from(rawVenueRes['data']);
+        else {
+          // Try to find the first list value inside the map
+          final firstList = rawVenueRes.values.firstWhere((v) => v is List, orElse: () => null);
+          if (firstList is List) parsedVenues = List<dynamic>.from(firstList);
+        }
+      } else if (rawVenueRes is String) {
+        try {
+          final decoded = jsonDecode(rawVenueRes);
+          if (decoded is List) parsedVenues = decoded;
+          else if (decoded is Map && decoded['results'] is List) parsedVenues = List<dynamic>.from(decoded['results']);
+        } catch (_) {
+          parsedVenues = [];
+        }
+      }
+
       // Fetch Detail Match (Buat ngisi form)
-      final matchRes = await request.get('http://localhost:8000/match_up/${widget.matchId}/json/');
+      final rawMatchRes = await request.get('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/${widget.matchId}/json/');
+
+      // Normalize match structure
+      dynamic matchObj;
+      List<dynamic> parsedParticipants = [];
+      if (rawMatchRes == null) {
+        matchObj = null;
+      } else if (rawMatchRes is Map && rawMatchRes.containsKey('match')) {
+        matchObj = rawMatchRes['match'];
+        if (rawMatchRes['participants'] is List) parsedParticipants = List<dynamic>.from(rawMatchRes['participants']);
+      } else if (rawMatchRes is Map && rawMatchRes.containsKey('data')) {
+        matchObj = rawMatchRes['data'];
+        if (rawMatchRes['participants'] is List) parsedParticipants = List<dynamic>.from(rawMatchRes['participants']);
+      } else if (rawMatchRes is Map && rawMatchRes['match'] == null) {
+        // Maybe the endpoint returned the match directly as a map
+        matchObj = rawMatchRes;
+        if (rawMatchRes['participants'] is List) parsedParticipants = List<dynamic>.from(rawMatchRes['participants']);
+      } else {
+        matchObj = rawMatchRes;
+      }
 
       setState(() {
-        venues = venueRes;
-        
-        final match = matchRes['match'];
-        participants = matchRes['participants'];
+        venues = parsedVenues;
+        participants = parsedParticipants;
 
-        // Isi Form dengan data lama
-        // Cari ID Venue berdasarkan nama (karena JSON detail biasanya cuma kasih nama)
-        // Disini kita lakukan pencocokan sederhana atau anggap user harus pilih ulang jika logic kompleks
-        // Untuk simpelnya, kita coba cari venue yang namanya sama
-        final existingVenue = venues.firstWhere(
-            (v) => v['fields']['name'] == match['venue_name'], 
-            orElse: () => null
-        );
-        
-        if (existingVenue != null) {
-            selectedVenueId = existingVenue['pk'].toString();
+        if (matchObj != null && matchObj is Map) {
+          // Fill form with existing data (guard nulls)
+          final match = matchObj;
+          final matchVenueName = match['venue_name'] ?? match['venue'] ?? match['venue_name_display'] ?? null;
+
+          final existingVenue = venues.firstWhere(
+              (v) => _venueNameOf(v) != null && _venueNameOf(v) == (matchVenueName?.toString() ?? ''),
+              orElse: () => null);
+
+          if (existingVenue != null) {
+            selectedVenueId = _venuePkOf(existingVenue);
+          }
+
+          slotController.text = (match['slot_total'] ?? match['slot'] ?? '').toString();
+          try {
+            if (match['start_time'] != null) startTime = DateTime.parse(match['start_time'].toString());
+            if (match['end_time'] != null) endTime = DateTime.parse(match['end_time'].toString());
+          } catch (_) {
+            startTime = null;
+            endTime = null;
+          }
+          selectedDifficulty = (match['difficulty_level'] ?? 'beginner').toString();
+        } else {
+          // If matchObj is null or unexpected, keep sensible defaults
+          slotController.text = '';
+          selectedDifficulty = 'beginner';
         }
 
-        slotController.text = match['slot_total'].toString();
-        startTime = DateTime.parse(match['start_time']);
-        endTime = DateTime.parse(match['end_time']);
-        selectedDifficulty = match['difficulty_level'];
-        
         isLoading = false;
       });
-    } catch (e) {
-      print("Error loading data: $e");
+    } catch (e, st) {
+      // Keep UI responsive and show an error message instead of crashing
+      print("Error loading data: $e\n$st");
       setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal memuat data: $e")));
+      }
     }
   }
 
   // --- 2. FUNGSI SAVE CHANGES ---
   Future<void> saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
-    if (startTime == null || endTime == null || selectedVenueId == null) {
+    if (startTime == null || endTime == null || selectedVenueId == null || selectedVenueId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Lengkapi semua data!")));
       return;
     }
 
     final request = context.read<CookieRequest>();
-    final url = 'http://localhost:8000/match_up/edit-flutter/${widget.matchId}/';
+    final url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/edit-flutter/${widget.matchId}/';
 
     try {
       final response = await request.post(
@@ -101,13 +180,13 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
         }),
       );
 
-      if (response['status'] == 'success') {
+      if (response != null && response['status'] == 'success') {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Match berhasil diupdate! ✅")));
         Navigator.pop(context, true); // Balik ke halaman sebelumnya dengan sinyal 'true' (refresh)
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response?['message']?.toString() ?? "Gagal update.")));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
@@ -118,19 +197,19 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
   Future<void> kickParticipant(int participantId, String name) async {
     final request = context.read<CookieRequest>();
     // URL Django: kick-flutter/<match_id>/<participant_id>/
-    final url = 'http://localhost:8000/match_up/kick-flutter/${widget.matchId}/$participantId/';
+    final url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/kick-flutter/${widget.matchId}/$participantId/';
 
     try {
       final response = await request.post(url, {}); // Kirim POST kosong
 
-      if (response['status'] == 'success') {
+      if (response != null && response['status'] == 'success') {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$name berhasil dikeluarkan.")));
         // Refresh data peserta
-        loadInitialData(); 
+        loadInitialData();
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response?['message']?.toString() ?? "Gagal kick.")));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal kick: $e")));
@@ -140,16 +219,16 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
   // --- PICKERS ---
   Future<void> pickDateTime(bool isStart) async {
     final date = await showDatePicker(
-      context: context, 
+      context: context,
       initialDate: isStart ? (startTime ?? DateTime.now()) : (endTime ?? DateTime.now()),
-      firstDate: DateTime.now(), 
-      lastDate: DateTime(2030)
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
     );
     if (date == null) return;
 
     final time = await showTimePicker(
-      context: context, 
-      initialTime: TimeOfDay.fromDateTime(isStart ? (startTime ?? DateTime.now()) : (endTime ?? DateTime.now()))
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(isStart ? (startTime ?? DateTime.now()) : (endTime ?? DateTime.now())),
     );
     if (time == null) return;
 
@@ -164,6 +243,9 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
   Widget build(BuildContext context) {
     if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
+    // Make sure participants is always a list
+    participants = participants ?? [];
+
     return Scaffold(
       backgroundColor: const Color(0xFFEF4444), // BACKGROUND MERAH
       appBar: AppBar(
@@ -172,19 +254,18 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
+      // Ensure UI adjusts when keyboard appears
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
           children: [
-            
             // --- BAGIAN 1: FORM EDIT ---
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))]
-              ),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [
+                BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+              ]),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -198,13 +279,15 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
                       value: selectedVenueId,
                       decoration: const InputDecoration(labelText: "Pilih Venue", border: OutlineInputBorder()),
                       items: venues.map((v) {
+                        final name = _venueNameOf(v) ?? 'Unknown';
+                        final pk = _venuePkOf(v) ?? '';
                         return DropdownMenuItem<String>(
-                          value: v['pk'].toString(),
-                          child: Text(v['fields']['name'], overflow: TextOverflow.ellipsis),
+                          value: pk,
+                          child: Text(name, overflow: TextOverflow.ellipsis),
                         );
                       }).toList(),
                       onChanged: (val) => setState(() => selectedVenueId = val),
-                      validator: (val) => val == null ? "Wajib diisi" : null,
+                      validator: (val) => (val == null || val.isEmpty) ? "Wajib diisi" : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -271,11 +354,9 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
             // --- BAGIAN 2: MANAGE PARTICIPANTS ---
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))]
-              ),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [
+                BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+              ]),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -288,51 +369,50 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
                       child: Center(child: Text("Belum ada peserta.", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))),
                     )
                   else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: participants.length,
-                      itemBuilder: (context, index) {
-                        final p = participants[index];
-                        // Asumsi backend mengirim data peserta yg lengkap. 
-                        // Karena kita pakai endpoint detail_json, biasanya strukturnya: 
-                        // "full_name": "...", "phone": "..."
-                        // Kita butuh ID Participant untuk nge-kick.
-                        // Pastikan di show_match_detail_json kamu menambahkan 'id' peserta!
-                        // Kalau belum, update view show_match_detail_json di Django:
-                        // "id": p.id, "full_name": p.full_name...
-                        
-                        // Fallback kalau ID ga ada (harus diupdate di backend biar jalan)
-                        final pId = p['id'] ?? 0; 
-                        
-                        return Card(
-                          color: Colors.grey[50],
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            title: Text(p['full_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(p['phone']),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.close, color: Colors.red),
-                              onPressed: () {
-                                showDialog(
-                                  context: context, 
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text("Kick User?"),
-                                    content: Text("Yakin ingin mengeluarkan ${p['full_name']}?"),
-                                    actions: [
-                                      TextButton(onPressed: ()=>Navigator.pop(ctx), child: const Text("Batal")),
-                                      TextButton(onPressed: () {
-                                        Navigator.pop(ctx);
-                                        kickParticipant(pId, p['full_name']);
-                                      }, child: const Text("Kick", style: TextStyle(color: Colors.red))),
-                                    ],
-                                  )
-                                );
-                              },
+                    // constrain participants list height so it doesn't force overflow
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: min(400, MediaQuery.of(context).size.height * 0.45),
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: participants.length,
+                        itemBuilder: (context, index) {
+                          final p = participants[index];
+                          final pId = (p is Map && p['id'] != null) ? p['id'] as int : 0;
+
+                          return Card(
+                            color: Colors.grey[50],
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              title: Text(p['full_name'] ?? p['name'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text(p['phone'] ?? '-'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.close, color: Colors.red),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text("Kick User?"),
+                                      content: Text("Yakin ingin mengeluarkan ${p['full_name'] ?? p['name'] ?? '-'}?"),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal")),
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(ctx);
+                                              kickParticipant(pId, p['full_name'] ?? p['name'] ?? '');
+                                            },
+                                            child: const Text("Kick", style: TextStyle(color: Colors.red))),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                 ],
               ),

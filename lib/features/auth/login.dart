@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                       String username = _usernameController.text;
                       String password = _passwordController.text;
                       final response = await request.login(
-                        "http://localhost:8000/authenticate/login_api/",
+                        "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/login_api/",
                         {
                           'username': username,
                           'password': password,

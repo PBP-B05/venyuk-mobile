@@ -38,15 +38,15 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
     
     if (rawUrl.startsWith('http')) {
       final encoded = Uri.encodeComponent(rawUrl);
-      return "http://localhost:8000/match_up/proxy-image/?url=$encoded";
+      return "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id//match_up/proxy-image/?url=$encoded";
     } 
     
-    return "http://localhost:8000$rawUrl";
+    return "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/$rawUrl";
   }
 
   Future<void> fetchDetail() async {
     final request = context.read<CookieRequest>();
-    final String url = 'http://localhost:8000/match_up/${widget.matchId}/json/';
+    final String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/${widget.matchId}/json/';
 
     try {
       final response = await request.get(url);
@@ -69,7 +69,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
     }
 
     final request = context.read<CookieRequest>();
-    final String url = 'http://localhost:8000/match_up/join-flutter/${widget.matchId}/';
+    final String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/join-flutter/${widget.matchId}/';
 
     try {
       final response = await request.post(
@@ -99,7 +99,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
 
   Future<void> deleteMatch() async {
     final request = context.read<CookieRequest>();
-    final String url = 'http://localhost:8000/match_up/delete-flutter/${widget.matchId}/';
+    final String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/delete-flutter/${widget.matchId}/';
 
     try {
       await request.post(url, {});

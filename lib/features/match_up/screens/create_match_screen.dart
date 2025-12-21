@@ -39,12 +39,12 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
 
   Future<void> _fetchVenues() async {
     final request = context.read<CookieRequest>();
-    String url = 'http://localhost:8000/json/';
+    String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/json/';
 
     // Jika aplikasi berjalan di Android emulator, ganti localhost -> 10.0.2.2
     try {
       if (!kIsWeb && Platform.isAndroid) {
-        url = url.replaceFirst('localhost', '10.0.2.2');
+        url = url.replaceFirst('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id', '10.0.2.2');
       }
     } catch (_) {
       // jika import dart:io gagal di web, sudah di-handle oleh kIsWeb
@@ -112,7 +112,7 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
          return;
       }
 
-      const String url = "http://localhost:8000/match_up/create-match/";
+      const String url = "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/create-match/";
       
       try {
         final response = await request.postJson(

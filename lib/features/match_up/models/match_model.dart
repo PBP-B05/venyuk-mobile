@@ -1,17 +1,19 @@
 class Match {
   final int id;
-  final String venueId; // UUID atau String ID
+  final String venueId;
   final String venueName;
   final String venueCity;
-  final String venueImage; // URL Gambar (Sudah Fix Localhost)
-  
+  final String venueImage;
   final String creatorUsername;
-  
   final int slotTotal;
   final int slotTerisi;
   final DateTime startTime;
   final DateTime endTime;
   final String difficultyLevel;
+
+  // NEW: status flags (backend mungkin mengirim ini)
+  final bool isJoined;
+  final bool isMyMatch;
 
   Match({
     required this.id,
@@ -25,6 +27,8 @@ class Match {
     required this.startTime,
     required this.endTime,
     required this.difficultyLevel,
+    this.isJoined = false,
+    this.isMyMatch = false,
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
@@ -34,41 +38,40 @@ class Match {
       if (val is String) return int.tryParse(val) ?? 0;
       return 0;
     }
+    bool safeBool(dynamic val) {
+      if (val == null) return false;
+      if (val is bool) return val;
+      if (val is String) return val.toLowerCase() == 'true';
+      if (val is int) return val != 0;
+      return false;
+    }
 
-    // --- LOGIC PROXY IMAGE ---
     String rawImage = safeString(json['venue_image']);
     String finalImageUrl = "";
-
     if (rawImage.isNotEmpty) {
       if (rawImage.startsWith('http')) {
-        // KASUS 1: URL Eksternal (https://google.com/...)
-        // Kita bungkus pakai Proxy Django biar tidak kena blokir Chrome
-        // Encode URL biar karakter aneh (%) aman
         final encodedUrl = Uri.encodeComponent(rawImage);
-        finalImageUrl = "http://localhost:8000/match_up/proxy-image/?url=$encodedUrl";
-      
+        finalImageUrl = "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id//match_up/proxy-image/?url=$encodedUrl";
       } else {
-        // KASUS 2: Gambar Lokal Django (/media/...)
-        finalImageUrl = "http://localhost:8000$rawImage";
+        finalImageUrl = "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/$rawImage";
       }
     }
-    // -------------------------
 
     return Match(
       id: safeInt(json['id']),
       venueId: safeString(json['venue']),
       venueName: safeString(json['venue_name']).isEmpty ? "Venue Unknown" : safeString(json['venue_name']),
       venueCity: safeString(json['venue_city']),
-      
-      // Pakai URL hasil logic di atas
-      venueImage: finalImageUrl, 
-      
+      venueImage: finalImageUrl,
       creatorUsername: safeString(json['creator_username']).isEmpty ? "User" : safeString(json['creator_username']),
       slotTotal: safeInt(json['slot_total']),
       slotTerisi: safeInt(json['slot_terisi']),
       startTime: json['start_time'] != null ? DateTime.tryParse(safeString(json['start_time'])) ?? DateTime.now() : DateTime.now(),
       endTime: json['end_time'] != null ? DateTime.tryParse(safeString(json['end_time'])) ?? DateTime.now().add(const Duration(hours: 1)) : DateTime.now(),
       difficultyLevel: safeString(json['difficulty_level']).isEmpty ? "beginner" : safeString(json['difficulty_level']),
+      // read possible backend-provided flags (try multiple key names)
+      isJoined: safeBool(json['is_joined'] ?? json['is_join'] ?? json['joined']),
+      isMyMatch: safeBool(json['is_my_match'] ?? json['is_creator'] ?? json['is_owner']),
     );
   }
 }

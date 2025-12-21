@@ -3,6 +3,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import '../auth/register.dart';
 import '../venyuk/pages/landing_page.dart';
+import '../venyuk/pages/venue_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -63,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const LandingPage(),
+                            builder: (_) => const VenuePage(),
                           ),
                         );
 

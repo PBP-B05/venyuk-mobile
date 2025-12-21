@@ -39,7 +39,7 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
     final request = context.read<CookieRequest>();
     
     // URL CHROME (127.0.0.1)
-    const String url = 'http://127.0.0.1:8000/venue/json/';
+    const String url = 'http://localhost:8000/venue/json/';
 
     try {
       final response = await request.get(url);
@@ -76,7 +76,7 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
          return;
       }
 
-      const String url = "http://127.0.0.1:8000/match_up/create-match/";
+      const String url = "http://localhost:8000/match_up/create-match/";
       
       try {
         final response = await request.postJson(

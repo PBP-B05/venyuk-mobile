@@ -1,9 +1,9 @@
 class Match {
   final int id;
-  final String venueId; // UUID
+  final String venueId; // UUID atau String ID
   final String venueName;
   final String venueCity;
-  final String venueImage; // URL Gambar
+  final String venueImage; // URL Gambar (Sudah Fix Localhost)
   
   final String creatorUsername;
   
@@ -28,7 +28,6 @@ class Match {
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
-    // Helper biar gak pusing konversi tipe data
     String safeString(dynamic val) => val?.toString() ?? "";
     int safeInt(dynamic val) {
       if (val is int) return val;
@@ -36,33 +35,39 @@ class Match {
       return 0;
     }
 
+    // --- LOGIC PROXY IMAGE ---
+    String rawImage = safeString(json['venue_image']);
+    String finalImageUrl = "";
+
+    if (rawImage.isNotEmpty) {
+      if (rawImage.startsWith('http')) {
+        // KASUS 1: URL Eksternal (https://google.com/...)
+        // Kita bungkus pakai Proxy Django biar tidak kena blokir Chrome
+        // Encode URL biar karakter aneh (%) aman
+        final encodedUrl = Uri.encodeComponent(rawImage);
+        finalImageUrl = "http://localhost:8000/match_up/proxy-image/?url=$encodedUrl";
+      
+      } else {
+        // KASUS 2: Gambar Lokal Django (/media/...)
+        finalImageUrl = "http://localhost:8000$rawImage";
+      }
+    }
+    // -------------------------
+
     return Match(
       id: safeInt(json['id']),
-      
-      // Handle UUID atau Int ID
       venueId: safeString(json['venue']),
-      
-      // Pastikan nama venue ada
       venueName: safeString(json['venue_name']).isEmpty ? "Venue Unknown" : safeString(json['venue_name']),
-      
       venueCity: safeString(json['venue_city']),
       
-      // Ambil gambar. Kalau API belum kirim field 'venue_image', kasih string kosong biar gak null
-      venueImage: safeString(json['venue_image']),
+      // Pakai URL hasil logic di atas
+      venueImage: finalImageUrl, 
       
       creatorUsername: safeString(json['creator_username']).isEmpty ? "User" : safeString(json['creator_username']),
-      
       slotTotal: safeInt(json['slot_total']),
       slotTerisi: safeInt(json['slot_terisi']),
-      
-      // Parsing Waktu Aman
-      startTime: json['start_time'] != null 
-          ? DateTime.tryParse(safeString(json['start_time'])) ?? DateTime.now() 
-          : DateTime.now(),
-      endTime: json['end_time'] != null 
-          ? DateTime.tryParse(safeString(json['end_time'])) ?? DateTime.now().add(const Duration(hours: 1)) 
-          : DateTime.now(),
-      
+      startTime: json['start_time'] != null ? DateTime.tryParse(safeString(json['start_time'])) ?? DateTime.now() : DateTime.now(),
+      endTime: json['end_time'] != null ? DateTime.tryParse(safeString(json['end_time'])) ?? DateTime.now().add(const Duration(hours: 1)) : DateTime.now(),
       difficultyLevel: safeString(json['difficulty_level']).isEmpty ? "beginner" : safeString(json['difficulty_level']),
     );
   }

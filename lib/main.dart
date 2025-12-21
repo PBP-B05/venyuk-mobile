@@ -5,30 +5,40 @@ import 'package:provider/provider.dart';
 // Import screen utama kamu
 // Pastikan path import ini sesuai dengan struktur foldermu
 import 'features/match_up/screens/match_up_screen.dart'; 
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+
+import 'features/venyuk/pages/landing_page.dart';
+import 'theme/app_colors.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    Provider(
+      create: (_) => CookieRequest(),
+      child: const VenYukApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class VenYukApp extends StatelessWidget {
+  const VenYukApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
-      create: (_) {
-        CookieRequest request = CookieRequest();
-        return request;
-      },
-      child: MaterialApp(
-        title: 'Venyuk Mobile',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
+    return MaterialApp(
+      title: 'VenYuk!',
+      debugShowCheckedModeBanner: false,
+
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primaryRed,
+          primary: AppColors.primaryRed,
         ),
-        // Langsung arahkan home ke MatchUpScreen buatanmu
-        home: const MatchUpScreen(),
+        scaffoldBackgroundColor: Colors.white,
       ),
+
+      home: const LandingPage(),
     );
   }
 }

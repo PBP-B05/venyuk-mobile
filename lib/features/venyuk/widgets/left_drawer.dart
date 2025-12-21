@@ -14,7 +14,7 @@ import '../../match_up/screens/match_up_screen.dart';
 import '../../venyuk/pages/venue_page.dart'; 
 
 // 4. Import halaman lain jika sudah ada (Promo, Shop, Versus, Blog)
-// import '../../promo/screens/promo_page.dart';
+import '../../promo/screens/promo_page.dart';
 import '../../ven_shop/screens/shop_page.dart';
 // ... dst
 
@@ -71,14 +71,13 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.discount_outlined),
             title: const Text('Promo'),
             onTap: () {
-              // Ganti dengan halaman PromoPage jika sudah ada
-              Navigator.pop(context); 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Fitur Promo Coming Soon!"))
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const PromoPage()),
               );
             },
           ),
-
+          
           // --- 3. VEN-SHOP ---
           ListTile(
             leading: const Icon(Icons.shopping_bag_outlined),

@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/user.dart';
+import 'package:venyuk_mobile/features/promo/models/user.dart';
 
 class AuthService {
   static const String baseUrl = 'http://localhost:8000';

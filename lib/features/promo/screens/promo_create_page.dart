@@ -3,8 +3,8 @@
 // =====================================
 
 import 'package:flutter/material.dart';
-import '../models/promo.dart';
-import '../services/promo_service.dart';
+import 'package:venyuk_mobile/features/promo/models/promo.dart';
+import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
 
 class PromoCreatePage extends StatefulWidget {
   final PromoElement? promoToEdit;
@@ -83,6 +83,7 @@ class _PromoCreatePageState extends State<PromoCreatePage> {
     }
   }
 
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -109,33 +110,47 @@ class _PromoCreatePageState extends State<PromoCreatePage> {
     try {
       final promoData = {
         'title': _titleController.text,
-        'description': _descriptionController.text,
+        'description': _descriptionController.text, // Ubah dari 'description' ke 'content'
         'amount_discount': int.parse(_amountDiscountController.text),
         'category': _selectedCategory,
         'max_uses': int.parse(_maxUsesController.text),
         'start_date': _startDate!.toIso8601String().split('T')[0],
         'end_date': _endDate!.toIso8601String().split('T')[0],
-        'is_active': true,
+        'is_featured': false, // Tambahkan is_featured
       };
 
       if (isEditMode) {
-        await _promoService.updatePromo(widget.promoToEdit!.code, promoData);
+        final result = await _promoService.updatePromo(widget.promoToEdit!.code, promoData);
+        
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Promo berhasil diupdate')),
-          );
+          if (result['status'] == 'success') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Promo berhasil diupdate'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context, true);
+          } else {
+            throw Exception(result['status'] ?? 'Update failed');
+          }
         }
       } else {
-        await _promoService.createPromo(promoData);
+        final result = await _promoService.createPromo(promoData);
+        
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Promo berhasil dibuat')),
-          );
+          if (result['status'] == 'success') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Promo berhasil dibuat'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context, true);
+          } else {
+            throw Exception(result['status'] ?? 'Create failed');
+          }
         }
-      }
-
-      if (mounted) {
-        Navigator.pop(context, true); // Return true to refresh list
       }
     } catch (e) {
       if (mounted) {
@@ -143,7 +158,10 @@ class _PromoCreatePageState extends State<PromoCreatePage> {
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

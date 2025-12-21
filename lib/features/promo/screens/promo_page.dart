@@ -3,14 +3,14 @@
 // =====================================
 
 import 'package:flutter/material.dart';
-import '../models/promo.dart';
-import '../services/promo_service.dart';
-import '../widgets/promo_card.dart';
-import '../widgets/promo_filter_tabs.dart';
-import '../widgets/promo_hero_section.dart';
-import '../widgets/promo_action_bar.dart';
-import 'promo_detail_page.dart';
-import 'promo_create_page.dart';
+import 'package:venyuk_mobile/features/promo/models/promo.dart';
+import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
+import 'package:venyuk_mobile/features/promo/widgets/promo_card.dart';
+import 'package:venyuk_mobile/features/promo/widgets/promo_filter_tabs.dart';
+import 'package:venyuk_mobile/features/promo/widgets/promo_hero_section.dart';
+import 'package:venyuk_mobile/features/promo/widgets/promo_action_bar.dart';
+import 'package:venyuk_mobile/features/promo/screens/promo_detail_page.dart';
+import 'package:venyuk_mobile/features/promo/screens/promo_create_page.dart';
 
 class PromoPage extends StatefulWidget {
   const PromoPage({Key? key}) : super(key: key);
@@ -121,7 +121,7 @@ class _PromoPageState extends State<PromoPage> {
       backgroundColor: Colors.white,
       elevation: 0,
       title: Image.asset(
-        'assets/logo_venyuk.png',
+        'assets/images/logo_venyuk.png',
         height: 40,
       ),
       actions: [

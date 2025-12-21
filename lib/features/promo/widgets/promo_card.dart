@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/promo.dart';
-import '../utils/date_formatter.dart';
+import 'package:venyuk_mobile/features/promo/models/promo.dart';
+import 'package:venyuk_mobile/features/promo/utils/date_formatter.dart';
 
 class PromoCard extends StatelessWidget {
   final PromoElement promo;

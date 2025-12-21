@@ -1,10 +1,10 @@
 // =====================================
-// FILE: lib/services/promo_service.dart
+// FILE: lib/services/promo_service.dart (UPDATE)
 // =====================================
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/promo.dart';
+import 'package:venyuk_mobile/features/promo/models/promo.dart';
 
 class PromoService {
   static const String baseUrl = 'http://localhost:8000';
@@ -53,57 +53,71 @@ class PromoService {
     }
   }
 
-  Future<bool> deletePromo(String code) async {
+  Future<Map<String, dynamic>> createPromo(Map<String, dynamic> promoData) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/promo/$code/delete/'),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception('Error deleting promo: $e');
-    }
-  }
-
-  Future<PromoElement> createPromo(Map<String, dynamic> promoData) async {
-    try {
+      print('📝 Creating promo with data: $promoData');
+      
       final response = await http.post(
-        Uri.parse('$baseUrl/promo/create_flutter/'),
+        Uri.parse('$baseUrl/promo/api/create/'),  // Ubah ke /api/create/
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: json.encode(promoData),
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return PromoElement.fromJson(data);
+      print('📡 Response status: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
       } else {
         throw Exception('Failed to create promo: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error creating promo: $e');
+      print('❌ Error: $e');
+      rethrow;
     }
   }
 
-  Future<PromoElement> updatePromo(String code, Map<String, dynamic> promoData) async {
+  Future<Map<String, dynamic>> updatePromo(String code, Map<String, dynamic> promoData) async {
     try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/promo/$code/update/'),
+      final response = await http.post(
+        Uri.parse('$baseUrl/promo/api/$code/update/'),  // Ubah ke /api/
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: json.encode(promoData),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return PromoElement.fromJson(data);
+        return json.decode(response.body);
       } else {
-        throw Exception('Failed to update promo: ${response.statusCode}');
+        throw Exception('Failed to update promo');
       }
     } catch (e) {
-      throw Exception('Error updating promo: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> deletePromo(String code) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/promo/api/$code/delete/'),  // Ubah ke /api/
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to delete promo');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 }

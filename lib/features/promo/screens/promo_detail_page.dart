@@ -4,11 +4,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/promo.dart'; // Sesuaikan path model kamu
-import '../services/promo_service.dart'; // Sesuaikan path service kamu
-import '../services/auth_service.dart'; 
-import '../utils/date_formatter.dart'; 
-import 'promo_create_page.dart'; 
+import 'package:venyuk_mobile/features/promo/models/promo.dart';
+import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
+import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
+import 'package:venyuk_mobile/features/promo/utils/date_formatter.dart';
+import 'package:venyuk_mobile/features/promo/screens/promo_create_page.dart';
 
 // Mock class jika belum ada (Bisa dihapus jika sudah import file asli)
 class AuthService { static bool get isSuperuser => true; }
@@ -43,8 +43,6 @@ class _PromoDetailPageState extends State<PromoDetailPage> {
   }
 
   void _navigateToEdit() {
-    // Navigasi ke halaman edit (Implementasi kamu)
-    /*
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -53,7 +51,6 @@ class _PromoDetailPageState extends State<PromoDetailPage> {
     ).then((result) {
       if (result == true) Navigator.pop(context, true);
     });
-    */
   }
 
   Future<void> _deletePromo() async {
@@ -61,9 +58,12 @@ class _PromoDetailPageState extends State<PromoDetailPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Promo'),
-        content: Text('Hapus promo "${widget.promo.title}"?'),
+        content: Text('Apakah Anda yakin ingin menghapus promo "${widget.promo.title}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -74,17 +74,37 @@ class _PromoDetailPageState extends State<PromoDetailPage> {
     );
 
     if (confirm == true && mounted) {
-      setState(() => isDeleting = true);
+      setState(() {
+        isDeleting = true;
+      });
+
       try {
-        // await _promoService.deletePromo(widget.promo.code); // Uncomment this
+        final result = await _promoService.deletePromo(widget.promo.code);
+        
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Promo dihapus')));
-          Navigator.pop(context, true);
+          if (result['status'] == 'success') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Promo berhasil dihapus'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context, true); // Return to list and refresh
+          } else {
+            throw Exception(result['status'] ?? 'Delete failed');
+          }
         }
       } catch (e) {
         if (mounted) {
-          setState(() => isDeleting = false);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+          setState(() {
+            isDeleting = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     }

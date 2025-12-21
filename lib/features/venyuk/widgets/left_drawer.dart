@@ -5,18 +5,11 @@ import 'package:provider/provider.dart';
 // --- IMPORTS ---
 // 1. Auth (Login)
 import '../../auth/login.dart'; 
-
-// 2. Match Up Screen
 import '../../match_up/screens/match_up_screen.dart';
-
-// 3. Venue Page (Supaya bisa balik ke home)
-// Pastikan path ini sesuai dengan lokasi file venue_page.dart kamu
 import '../../venyuk/pages/venue_page.dart'; 
-
-// 4. Import halaman lain jika sudah ada (Promo, Shop, Versus, Blog)
 import '../../promo/screens/promo_page.dart';
 import '../../ven_shop/screens/shop_page.dart';
-// ... dst
+import 'package:venyuk_mobile/features/versus/pages/versus_list_page.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -77,7 +70,7 @@ class LeftDrawer extends StatelessWidget {
               );
             },
           ),
-          
+
           // --- 3. VEN-SHOP ---
           ListTile(
             leading: const Icon(Icons.shopping_bag_outlined),
@@ -102,15 +95,14 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
 
-          // --- 5. VERSUS ---
+           // --- 5. VERSUS ---
           ListTile(
             leading: const Icon(Icons.sports_mma_outlined),
             title: const Text('Versus'),
             onTap: () {
-              // Ganti dengan halaman VersusPage jika sudah ada
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Fitur Versus Coming Soon!"))
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const VersusListPage()),
               );
             },
           ),

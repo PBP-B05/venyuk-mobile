@@ -3,8 +3,9 @@ import 'package:venyuk_mobile/theme/app_colors.dart';
 import '../models/venue_model.dart';
 import '../services/venue_service.dart';
 import '../widgets/venue_card.dart';
-import '../widgets/venue_drawer.dart';
+import '../widgets/left_drawer.dart';
 import 'booking_page.dart';
+import 'my_bookings_page.dart';
 
 class VenuePage extends StatefulWidget {
   const VenuePage({super.key});
@@ -41,11 +42,33 @@ class _VenuePageState extends State<VenuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const LeftDrawer(),
+      
       appBar: AppBar(
         title: const Text('Booking Venue'),
-        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Tooltip(
+              message: 'My Bookings',
+              child: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const MyBookingsPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.bookmark),
+                color: AppColors.primaryRed,
+              ),
+            ),
+          ),
+        ],
       ),
-      drawer: const VenueDrawer(),
+
       body: Column(
         children: [
           // 🔍 SEARCH BAR

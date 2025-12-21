@@ -177,13 +177,17 @@ Future<void> submitBooking() async {
   print('[DEBUG] Logged in: ${request.loggedIn}');
 
   try {
-    final response = await request.post(url, bookingData);
+    // ✅ GUNAKAN request.post() DARI CookieRequest (otomatis handle CSRF & cookies)
+    final response = await request.post(
+      url,
+      jsonEncode(bookingData),
+    );
     
     print('[DEBUG] Response: $response');
 
     if (!mounted) return;
 
-    /// ✅ SATU-SATUNYA KONDISI VALID
+    /// ✅ RESPONSE DARI request.post() SUDAH JSON DECODED
     if (response['success'] == true) {
       setState(() {
         successMessage = response['message'] ?? 'Booking berhasil!';
@@ -221,12 +225,12 @@ Future<void> submitBooking() async {
 
     if (mounted) {
       setState(() {
-        errorMessage = 'Terjadi kesalahan koneksi';
+        errorMessage = 'Terjadi kesalahan koneksi: ${e.toString()}';
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal terhubung ke server'),
+        SnackBar(
+          content: Text('Gagal terhubung ke server: $e'),
           backgroundColor: Colors.red,
         ),
       );

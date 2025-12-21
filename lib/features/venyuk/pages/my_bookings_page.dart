@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/theme/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../widgets/venue_drawer.dart';
 
 class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});
@@ -65,7 +64,6 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
         title: const Text('My Bookings'),
         elevation: 0,
       ),
-      drawer: const VenueDrawer(),
       body: FutureBuilder<List<BookingItem>>(
         future: _bookingsFuture,
         builder: (context, snapshot) {
@@ -181,10 +179,10 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Icon(Icons.add, color: Colors.white),
+                  Icon(Icons.arrow_back, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
-                    'Booking Sekarang',
+                    'Kembali ke Sewa Venue',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,

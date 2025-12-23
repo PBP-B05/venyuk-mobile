@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/product.dart';
+import 'package:venyuk_mobile/features/ven_shop/screens/history_page.dart';
 import 'package:venyuk_mobile/features/ven_shop/screens/shop_page.dart';
 import 'package:venyuk_mobile/global/screens/main_nav.dart'; 
 
@@ -136,7 +137,7 @@ class _SuccessPageState extends State<SuccessPage> {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const ShopPage()),
+                      MaterialPageRoute(builder: (context) => const HistoryPage()),
                       (route) => false,
                     );
                   },

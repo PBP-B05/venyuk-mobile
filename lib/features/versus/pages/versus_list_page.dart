@@ -227,8 +227,6 @@ class _HeaderCard extends StatelessWidget {
   final ValueChanged<String?> onChangedSport;
   final VoidCallback onApply;
 
-  static const Color kPrimary = Color(0xFFD84040);
-
   const _HeaderCard({
     required this.sportFilter,
     required this.sportOptions,

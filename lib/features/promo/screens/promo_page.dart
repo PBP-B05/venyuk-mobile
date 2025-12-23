@@ -12,7 +12,6 @@ import 'package:venyuk_mobile/features/promo/widgets/promo_action_bar.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_detail_page.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_create_page.dart';
 import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart';
-import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
 import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class PromoPage extends StatefulWidget {
@@ -124,40 +123,7 @@ class _PromoPageState extends State<PromoPage> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    final String displayUsername = AuthService.currentUser?.username ?? 'Tamu';
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: Image.asset(
-        'assets/images/logo_venyuk.png',
-        height: 40,
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: Row(
-            children: [
-              const CircleAvatar(
-                radius: 18,
-                backgroundColor: Color(0xFF4A90E2),
-                child: Icon(Icons.person, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                displayUsername,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+ 
 
   Widget _buildPromoList() {
     if (isLoading) {

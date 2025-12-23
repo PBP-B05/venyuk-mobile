@@ -5,9 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-
-// --- IMPORTS ---
-import '../../auth/login.dart'; 
 import '../../match_up/screens/match_up_screen.dart';
 import '../../venyuk/pages/venue_page.dart'; 
 import '../../promo/screens/promo_page.dart';
@@ -15,7 +12,6 @@ import '../../ven_shop/screens/shop_page.dart';
 import '../../versus/pages/versus_list_page.dart';
 import "../../article/screens/blog_list_page.dart";
 import '../../venyuk/pages/landing_page.dart';
-import 'package:venyuk_mobile/theme/app_colors.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -23,7 +19,6 @@ class LeftDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
-    final Color primaryRed = const Color(0xFFEF4444);
 
     return Drawer(
       child: ListView(
@@ -80,7 +75,6 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
 
-          // --- 3. VEN-SHOP ---
           ListTile(
             leading: const Icon(Icons.shopping_bag_outlined),
             title: const Text('Ven-Shop'),
@@ -135,7 +129,6 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Logout', style: TextStyle(color: Colors.red)),
             onTap: () async {
-              print('Fetching from: https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/logout_api/');
               final response = await request.logout(
                 "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/logout_api/"
               );

@@ -149,8 +149,6 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
         isLoading = false;
       });
     } catch (e, st) {
-      // Keep UI responsive and show an error message instead of crashing
-      print("Error loading data: $e\n$st");
       setState(() => isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal memuat data: $e")));
@@ -194,10 +192,8 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
     }
   }
 
-  // --- 3. FUNGSI KICK PARTICIPANT ---
   Future<void> kickParticipant(int participantId, String name) async {
     final request = context.read<CookieRequest>();
-    // URL Django: kick-flutter/<match_id>/<participant_id>/
     final url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/match_up/kick-flutter/${widget.matchId}/$participantId/';
 
     try {

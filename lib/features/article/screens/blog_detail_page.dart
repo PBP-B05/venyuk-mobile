@@ -35,7 +35,9 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
         currentUserId = response['user_id'];
       });
     } catch (e) {
-      print("Gagal ambil user ID: $e");
+      setState(() {
+        currentUserId = null;
+      });
     }
   }
 

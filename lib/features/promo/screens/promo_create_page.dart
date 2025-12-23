@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/features/promo/models/promo.dart';
 import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
-import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart ';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class PromoCreatePage extends StatefulWidget {
   final PromoElement? promoToEdit;

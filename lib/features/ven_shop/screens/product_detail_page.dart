@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/product.dart';
-import 'package:venyuk_mobile/features/ven_shop/screens/checkout_page.dart'; 
-import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart';
+import 'package:venyuk_mobile/features/ven_shop/screens/checkout_page.dart';
 import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class ProductDetailPage extends StatelessWidget {

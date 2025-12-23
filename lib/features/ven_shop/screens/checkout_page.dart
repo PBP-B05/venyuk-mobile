@@ -4,7 +4,6 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/product.dart';
 import 'package:venyuk_mobile/features/ven_shop/screens/success_page.dart';
-import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart'; 
 import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 import 'package:venyuk_mobile/theme/app_colors.dart';
 
@@ -26,8 +25,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String _email = "";
   String _address = "";
   bool _isLoading = false;
-  
-  // State baru untuk Validasi Promo
   bool _isCheckingPromo = false;
   int? _discountedPrice; // Kalau null, berarti pakai harga asli
   String? _promoMessage;

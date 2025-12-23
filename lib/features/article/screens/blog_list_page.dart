@@ -38,7 +38,9 @@ class _BlogListPageState extends State<BlogListPage> {
         isSuperuser = response['is_superuser'] ?? false; 
       });
     } catch (e) {
-      print("Gagal cek status admin: $e");
+      setState(() {
+        isSuperuser = false;
+      });
     }
   }
 

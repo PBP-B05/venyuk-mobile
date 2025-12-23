@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:venyuk_mobile/features/promo/models/promo.dart';
 import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
 import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
-import 'package:venyuk_mobile/features/promo/utils/date_formatter.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_create_page.dart';
 import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 

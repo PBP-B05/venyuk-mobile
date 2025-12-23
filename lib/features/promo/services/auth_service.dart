@@ -1,5 +1,4 @@
 import 'package:venyuk_mobile/features/promo/models/user.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class AuthService {
   static User? _currentUser;

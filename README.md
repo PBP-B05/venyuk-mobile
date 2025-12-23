@@ -1,40 +1,80 @@
-# venyuk_mobile
+# Venyuk Mobile 🏸🏀⚽
 
 [![Build Status](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc/status.svg?token=WgX9jDtYPVcT92Yzfq-Vog&branch=main)](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc)
 
-## Download
-Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc/installable-artifacts/5e22d89bbe785821/public-install-page/c94633e3afc7d70d72aa0d4671a92c72)
+## 📱 Tentang Venyuk
 
-Nama-nama anggota kelompok 
--Anderson Tirza Liman 
--Bintoro Nata Wijaya 
--Favian Muhammad Rasyad Reswara 
--Muhammad Fattan Azzaka 
--Clairine Christabel Lim 
--Cyrillo Praditya Soeharto
+**Venyuk** adalah aplikasi layanan penyewaan venue olahraga (Sport Venue Booking) yang memudahkan pengguna untuk mencari dan menyewa lapangan olahraga. Tidak hanya itu, Venyuk hadir sebagai _one-stop solution_ bagi pecinta olahraga dengan menyediakan fitur toko peralatan olahraga, pencarian lawan tanding (sparing), hingga komunitas main bareng.
 
--Deskripsi aplikasi (cerita aplikasi yang diajukan serta kebermanfaatannya) Venyuk adalah aplikasi yang memberikan jasa untuk para penggunanya agar dapat menyewa venue/lapangan untuk jenis-jenis olahraga yang bervariasi. Tidak hanya itu Venyuk juga memiliki fitur untuk membeli perlengkapan untuk mendukung aktivitas olahraga pengguna. Kemudian pengguna dapat melakukan sparing dengan mencari lawan dengan fitur yang disediakan.Jika pengguna tidak memiliki teman untuk bermain Venyuk juga menyediakan fitur untuk "main bareng" dengan join venue yang ada dan masih kekurangan orang.Terakhir Venyuk menyediakan blog sebagai portal informasi untuk pemberitahuan terkini mengenai dunia olahraga,e-sport, dan public figure yang berhubungan dengan kegiatan olahraga(contohnya tentang acara bahkan voli, tepuk bulu, dan semacamnya).
+Aplikasi ini juga dilengkapi dengan portal berita (Blog) untuk menyajikan informasi terkini seputar dunia olahraga, e-sport, dan public figure.
 
--Daftar Modul yang akan diimplementasikan modul:
+### 📥 Unduh Aplikasi
+Dapatkan versi terbaru aplikasi Venyuk di sini:
+[**Download APK**](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc/installable-artifacts/2ca6947c2036bd59/public-install-page/ebc0410f5d3368a699f2d0c1681c7ec5)
 
-sewa lapangan (Andy)
-toko alat(Ello)
-main bareng (clairine)
-sparing (rasyad)
-promo (zaka)
-blog (Bintoro)
+---
 
--Role atau peran pengguna beserta deskripsinya (karena bisa saja lebih dari satu jenis pengguna yang mengakses aplikasi) 
--Admin(Dapat menambahkan Venue,menghapus venue,menambahkan blog,dll) -User(Dapat mengakses fitur-fitur yang telah disediakan tetapi tidak dapat melakukan perubahan jadi hanya bisa booking dan membaca blog) -User belum login(Cuman bisa liat-liat jadi kalo mau pesen, beli, sparring, ikutan main, bikin post, dll, itu harus login/daftar)
+## 👥 Tim Pengembang & Modul
 
-Alur pengintegrasiannya sendiri adalah pada pekan pertama fitur yang pertama kali di integrasi adalah Login dan Register yang merupakan fondasi untuk keseluruhan modul,kemudian di peka kedua fitur untuk menampilkan list booking venue,lalu di minggu ketiga baru modul-modul sisanya diintegrasikan. Dan di minggu terakhir digunakan untuk melakukan perbaikan bug-bug yang kemungkinan muncul selama proses uji coba.
+Berikut adalah daftar anggota kelompok beserta modul yang diimplementasikan:
 
-Alur & penjelasan penggunaan modul pada aplikasi adalah sebagai berikut:
-- User akan landing pertama kali pada sebuah halaman landing page, dengan beberapa tampilan mengenai Venue yang dapat disewakan (gambar-gambar venue) beserta dengan keterangan tambahan aplikasi (identitas, motto aplikasi, dll)
-- Agar dapat menggunakan fitur, user dapat melakukan login dengan menekan tombol login pada halaman/drawer, bisa juga melakukan register apabila belum memiliki akun. Saat user melakukan autentikasi, aplikasi akan terintegrasi dengan Django sehingga data username dan password akan tersimpan di database.
-- Setelah user berhasil login, fitur-fitur pada aplikasi dapat digunakan, seperti: Sewa Venue, Berbelanja di Shop, Match Up (main bareng), Versus (bertanding melawan orang/tim lain), menggunakan promo, serta membaca artikel/blog yang tersedia.
-- Operasi CRUD sederhana dapat dilakukan user pada fitur: Sewa Venue (Create-View-Edit-Cancel Booking), Match- Up (Create-View-Edit-Delete Match Up), Versus (Create-View-Edit-Delete Versus Match). Kemudin untuk fitur Belanja di Shop, bisa dilakukan operasi View/Read Product dan confirm purchase; Operasi Create, Update, dan Delete hanya dapat dilakukan oleh admin. Untuk fitur Article/Blog, hanya admin yang dapat Create-Update-Delete article, sedangkan user biasa hanya bisa read. Untuk fitur promo, user biasa dapat melakukan read, sedangkan untuk fitur Create-Update-Delete, hanya admin yang bisa melakukannya.
-- Ada juga penggunaan cookies untuk prosesi login-logout. Apabila user sudah selesai menggunakan aplikasi, user dapat menekan tombol log out untuk mengakhiri sesi.
+| Nama Anggota | Modul / Fitur | Deskripsi Singkat |
+| :--- | :--- | :--- |
+| **Anderson Tirza Liman** | Sewa Lapangan | Fitur utama untuk melihat daftar venue dan melakukan booking. |
+| **Cyrillo Praditya Soeharto** | Toko Alat (Shop) | E-commerce mini untuk membeli perlengkapan olahraga. |
+| **Clairine Christabel Lim** | Main Bareng | Fitur untuk join venue yang kekurangan pemain. |
+| **Favian Muhammad Rasyad R.** | Sparing | Mencari lawan tanding (tim vs tim atau perorangan). |
+| **Muhammad Fattan Azzaka** | Promo | Manajemen kode promo dan diskon untuk user. |
+| **Bintoro Nata Wijaya** | Blog | Portal informasi dan berita olahraga terkini. |
 
-Link Figma:
-https://www.figma.com/design/tWsB5Iaigw3EHNq5Rle7Fw/Untitled?node-id=0-1&t=jrxblqVwznSRYAqy-1
+---
+
+## 🔑 Role Pengguna
+
+Aplikasi ini memiliki 3 jenis role dengan hak akses yang berbeda:
+
+1.  **Guest (User Belum Login)**
+    * Hanya dapat melihat-lihat daftar venue, produk, dan blog (Read Only).
+    * Harus melakukan registrasi/login untuk melakukan transaksi atau interaksi.
+2.  **Authenticated User (User Login)**
+    * Dapat melakukan booking venue, membeli alat, membuat jadwal sparing, dan join main bareng.
+    * Memiliki akses penuh ke fitur CRUD user (kecuali fitur admin).
+3.  **Admin / Superuser**
+    * Memiliki hak akses penuh untuk manajemen konten.
+    * Dapat menambahkan/menghapus Venue, membuat postingan Blog, update stok Toko, dan manajemen Promo.
+
+---
+
+## 🛠️ Alur Integrasi & Pengembangan
+
+Proyek ini dikembangkan dengan tahapan sebagai berikut:
+
+* **Minggu 1:** Integrasi fitur **Autentikasi (Login & Register)** sebagai fondasi utama.
+* **Minggu 2:** Integrasi fitur **List Booking Venue**.
+* **Minggu 3:** Integrasi seluruh modul sisa (Shop, Sparing, Main Bareng, Promo, Blog).
+* **Minggu 4:** _Bug Fixing_, _Quality Assurance_, dan penyempurnaan UI/UX.
+
+---
+
+## 📖 Panduan Pengguna (User Flow)
+
+1.  **Landing Page**
+    * Saat pertama kali membuka aplikasi, user akan disambut halaman Landing Page yang menampilkan highlight venue dan informasi aplikasi.
+2.  **Autentikasi**
+    * User menekan tombol login pada Drawer atau halaman utama.
+    * Data akun akan tersimpan di database Django.
+    * _Cookies_ digunakan untuk manajemen sesi login/logout.
+3.  **Penggunaan Fitur**
+    * **Sewa Venue:** User dapat melakukan _Create, View, Edit,_ dan _Cancel_ booking.
+    * **Shop:** User melihat katalog dan membeli barang. (Admin mengelola stok barang).
+    * **Match Up & Versus:** User dapat membuat room untuk main bareng atau mencari lawan tanding.
+    * **Blog & Promo:** User membaca artikel dan menggunakan promo yang tersedia.
+4.  **Logout**
+    * User menekan tombol logout untuk mengakhiri sesi dan kembali menjadi Guest.
+
+---
+
+## 🎨 Desain Antarmuka
+
+Desain UI/UX aplikasi ini dapat dilihat melalui Figma berikut:
+[**Lihat Desain Figma**](https://www.figma.com/design/tWsB5Iaigw3EHNq5Rle7Fw/Untitled?node-id=0-1&t=jrxblqVwznSRYAqy-1)

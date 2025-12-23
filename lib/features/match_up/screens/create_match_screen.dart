@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
 
@@ -149,11 +150,12 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
     final Color primaryRed = const Color(0xFFEF4444);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Buat Match Baru", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: primaryRed,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Buat Match',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(

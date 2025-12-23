@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/versus_model.dart';
 import '../services/versus_api.dart' as api;
 import 'versus_form_page.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class VersusDetailPage extends StatefulWidget {
   final int challengeId;
@@ -132,12 +133,12 @@ class _VersusDetailPageState extends State<VersusDetailPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
-      appBar: AppBar(
-        title: const Text('Detail Matchup'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Matchup Detail',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: FutureBuilder<Challenge>(
         future: _future,
         builder: (context, snap) {

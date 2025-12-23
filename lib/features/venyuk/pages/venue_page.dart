@@ -3,7 +3,8 @@ import '../models/venue_model.dart';
 import '../services/venue_service.dart';
 import '../widgets/venue_card.dart';
 import 'booking_page.dart';
-import '../../venyuk/widgets/left_drawer.dart'; 
+import '../../venyuk/widgets/left_drawer.dart';
+import '../../../global/widget/venyuk_app_bar.dart';
 
 class VenuePage extends StatefulWidget {
   const VenuePage({super.key});
@@ -40,102 +41,48 @@ class _VenuePageState extends State<VenuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // =======================================================
-      // 1. PASANG DRAWER DI SINI
-      // =======================================================
-      drawer: const LeftDrawer(), 
-      
-      // AppBar otomatis akan memunculkan icon Hamburger 
-      // karena kita sudah memasang drawer di atas.
-      appBar: AppBar(
-        title: const Text('Booking Venue'),
-        // Kalau mau icon hamburgernya warna tertentu (misal hitam/putih), atur di sini:
-        iconTheme: const IconThemeData(color: Colors.black), 
-      ),
-
+      drawer: const LeftDrawer(),
+      appBar: const VenyukAppBar(
+        title: 'Daftar Venue',
+        showDrawerButton: true,
+        showUserMenu: true,
+        ),
       body: Column(
         children: [
-          // 🔍 SEARCH BAR
+          // Bagian Search & Filter
           Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari venue...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onSubmitted: (value) {
-                _searchQuery = value;
-                _loadVenues();
-              },
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String?>(
-                    initialValue: _selectedCategory,
-                    hint: const Text('Kategori'),
-                    items: const [
-                      DropdownMenuItem<String?>(value: null, child: Text('All Category')),
-                      DropdownMenuItem(value: 'futsal', child: Text('Futsal')),
-                      DropdownMenuItem(value: 'basketball', child: Text('Basketball')),
-                      DropdownMenuItem(value: 'badminton', child: Text('Badminton')),
-                      DropdownMenuItem(value: 'mini soccer', child: Text('Mini Soccer')),
-                      DropdownMenuItem(value: 'tennis', child: Text('Tennis')),
-                      DropdownMenuItem(value: 'padel', child: Text('Padel')),
-                      DropdownMenuItem(value: 'voli', child: Text('Voli')),
-                      DropdownMenuItem(value: 'biliard', child: Text('Biliard')),
-                      DropdownMenuItem(value: 'golf', child: Text('Golf')),
-                      DropdownMenuItem(value: 'shooting', child: Text('Shooting')),
-                      DropdownMenuItem(value: 'tennis meja', child: Text('Tennis Meja')),
-                      DropdownMenuItem(value: 'sepak bola', child: Text('Sepak Bola')),
-                      DropdownMenuItem(value: 'pickle ball', child: Text('Pickle Ball')),
-                      DropdownMenuItem(value: 'squash', child: Text('Squash')),
-                    ],
-                    onChanged: (value) {
-                      _selectedCategory = value;
-                      _loadVenues();
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Cari venue...",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                    onChanged: (val) {
+                      _searchQuery = val;
+                      // Tambahkan debounce jika perlu
                     },
+                    onSubmitted: (_) => _loadVenues(),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: 'Min Harga',
-                    ),
-                    onSubmitted: (value) {
-                      _minPrice = int.tryParse(value);
-                      _loadVenues();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: 'Max Harga',
-                    ),
-                    onSubmitted: (value) {
-                      _maxPrice = int.tryParse(value);
-                      _loadVenues();
-                    },
-                  ),
+                const SizedBox(width: 12),
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: () {
+                    // Logika filter popup
+                  },
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 8),
-
+          // Bagian List Venue (RESPONSIVE GRID)
           Expanded(
             child: FutureBuilder<List<Venue>>(
               future: _venuesFuture,
@@ -145,7 +92,7 @@ class _VenuePageState extends State<VenuePage> {
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text(snapshot.error.toString()));
+                  return Center(child: Text("Error: ${snapshot.error}"));
                 }
 
                 final venues = snapshot.data!;
@@ -156,30 +103,55 @@ class _VenuePageState extends State<VenuePage> {
                   );
                 }
 
-                return GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 1,
-                    childAspectRatio: 2.0,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: venues.length,
-                  itemBuilder: (context, index) {
-                    final venue = venues[index];
-                    return VenueCard(
-                      venue: venue,
-                      onBook: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BookingPage(venue: venue),
-                          ),
+                // --- LOGIKA RESPONSIVE DIMULAI DI SINI ---
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    int gridCount = 1;
+                    if (constraints.maxWidth > 1200) {
+                      gridCount = 4;
+                    } else if (constraints.maxWidth > 800) {
+                      gridCount = 3; 
+                    } else if (constraints.maxWidth > 600) {
+                      gridCount = 2; 
+                    } else {
+                      gridCount = 1;
+                    }
+
+                    double aspectRatio;
+  
+                    if (gridCount == 1) {
+                      aspectRatio = 0.9; 
+                    } else {
+                      aspectRatio = 0.75; 
+                    }
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: gridCount,
+                        childAspectRatio: aspectRatio,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16, // Jarak antar kolom
+                      ),
+                      itemCount: venues.length,
+                      itemBuilder: (context, index) {
+                        final venue = venues[index];
+                        return VenueCard(
+                          venue: venue,
+                          onBook: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BookingPage(venue: venue),
+                              ),
+                            );
+                          },
                         );
                       },
                     );
                   },
                 );
+                // --- AKHIR LOGIKA RESPONSIVE ---
               },
             ),
           ),

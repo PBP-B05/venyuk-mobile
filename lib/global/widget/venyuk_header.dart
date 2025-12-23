@@ -90,7 +90,7 @@ class VenyukHeader extends StatelessWidget {
                 );
               } else if (value == 'logout') {
                 final response = await request.logout(
-                  "http://127.0.0.1:8000/authenticate/logout/",
+                  "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/logout/",
                 );
                 if (context.mounted) {
                   if (response['status']) {

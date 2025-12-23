@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/product.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class ProductFormPage extends StatefulWidget {
   final Product? product; 
@@ -48,11 +49,34 @@ class _ProductFormPageState extends State<ProductFormPage> {
     final isEdit = widget.product != null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isEdit ? "Edit Produk" : "Tambah Produk"),
-        backgroundColor: const Color(0xFFD84040),
-        foregroundColor: Colors.white,
+      appBar: VenyukAppBar(
+  title: (isEdit ? 'Edit Produk' : 'Buat Produk'),
+  showBackButton: true,
+  showDrawerButton: false,
+  showUserMenu: false,
+  onBackPressed: () {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Batalkan?'),
+        content: Text('Data yang belum disimpan akan hilang'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Back to previous page
+            },
+            child: Text('Ya'),
+          ),
+        ],
       ),
+    );
+  },
+),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -141,8 +165,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 if (_formKey.currentState!.validate()) {
                   
                   String url = isEdit 
-                    ? "http://127.0.0.1:8000/ven_shop/edit-flutter/${widget.product!.id}/"
-                    : "http://127.0.0.1:8000/ven_shop/create-flutter/";
+                    ? "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/ven_shop/edit-flutter/${widget.product!.id}/"
+                    : "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/ven_shop/create-flutter/";
                   
                   String finalImage = _imageController.text.trim();
                   if (finalImage.isEmpty) {

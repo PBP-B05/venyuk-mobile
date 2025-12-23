@@ -1,10 +1,7 @@
-// =====================================
-// FILE: lib/screens/promo_create_page.dart
-// =====================================
-
 import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/features/promo/models/promo.dart';
 import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart ';
 
 class PromoCreatePage extends StatefulWidget {
   final PromoElement? promoToEdit;
@@ -171,18 +168,34 @@ class _PromoCreatePageState extends State<PromoCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          isEditMode ? 'Edit Promo' : 'Buat Promo Baru',
-          style: const TextStyle(color: Colors.black),
-        ),
+      appBar: VenyukAppBar(
+  title: (isEditMode ? 'Edit Promo' : 'Buat Promo'),
+  showBackButton: true,
+  showDrawerButton: false,
+  showUserMenu: false,
+  onBackPressed: () {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Batalkan?'),
+        content: Text('Data yang belum disimpan akan hilang'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Back to previous page
+            },
+            child: Text('Ya'),
+          ),
+        ],
       ),
+    );
+  },
+),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(

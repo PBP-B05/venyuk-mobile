@@ -5,6 +5,7 @@ import 'package:venyuk_mobile/features/article/models/blog_entry.dart';
 import 'package:venyuk_mobile/features/article/screens/blog_form_page.dart';
 import 'package:venyuk_mobile/features/article/widgets/blog_card.dart';
 import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class BlogListPage extends StatefulWidget {
   const BlogListPage({super.key});
@@ -31,7 +32,7 @@ class _BlogListPageState extends State<BlogListPage> {
     final request = context.read<CookieRequest>();
     try {
       // Panggil endpoint yang sama dengan yang kita pakai di DetailPage
-      final response = await request.get('http://127.0.0.1:8000/blog/get-user-id/');
+      final response = await request.get('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/get-user-id/');
       setState(() {
         // Ambil data is_superuser (pastikan di views.py Django sudah return ini)
         isSuperuser = response['is_superuser'] ?? false; 
@@ -42,9 +43,9 @@ class _BlogListPageState extends State<BlogListPage> {
   }
 
   Future<List<BlogEntry>> fetchBlogs(CookieRequest request) async {
-    String url = 'http://127.0.0.1:8000/blog/json/';
+    String url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/json/';
     if (selectedCategory == "My Blog") {
-      url = 'http://127.0.0.1:8000/blog/my-blog-json/';
+      url = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/my-blog-json/';
     }
 
     final response = await request.get(url);
@@ -65,11 +66,11 @@ class _BlogListPageState extends State<BlogListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       drawer: const LeftDrawer(),
-      appBar: AppBar(
-        title: const Text('Blog List'),
-        backgroundColor: const Color(0xFFB71C1C), // Merah Maroon
-        foregroundColor: Colors.white,
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Blog List',
+        showDrawerButton: true,
+        showUserMenu: true,
+        ),
       body: Column(
         children: [
           // ==============================================

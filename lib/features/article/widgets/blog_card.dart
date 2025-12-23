@@ -37,7 +37,7 @@ class BlogCard extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: blog.fields.thumbnail != null && blog.fields.thumbnail!.isNotEmpty
                 ? Image.network(
-                  'http://127.0.0.1:8000/blog/proxy-image/?url=${Uri.encodeComponent(blog.fields.thumbnail!)}',
+                  'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/proxy-image/?url=${Uri.encodeComponent(blog.fields.thumbnail!)}',
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,

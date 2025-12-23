@@ -31,7 +31,7 @@ class _BookingModalState extends State<BookingModal> {
 
     final dateStr = selectedDate!.toIso8601String().split('T')[0];
     final url =
-        'http://localhost:8000/api/availability/${widget.venue.id}/?date=$dateStr';
+        'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/api/availability/${widget.venue.id}/?date=$dateStr';
 
     final res = await http.get(Uri.parse(url));
 
@@ -57,7 +57,7 @@ class _BookingModalState extends State<BookingModal> {
 
     final res = await http.post(
       Uri.parse(
-          'http://localhost:8000/api/book/${widget.venue.id}/'),
+          'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/api/book/${widget.venue.id}/'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'booking_date':

@@ -66,7 +66,7 @@ class _VersusListPageState extends State<VersusListPage> {
     return [];
   }
 
-  void _refresh() {
+  void _refresh() async {
     setState(() => _future = _fetch());
   }
 
@@ -538,7 +538,7 @@ class _SportIcon extends StatelessWidget {
       "volleyball": "volleyball.png",
       "tennis": "tennis.png",
     };
-    return 'assets/images/sports/${map[k] ?? "default.png"}';
+    return 'images/sports/${map[k] ?? "default.png"}';
   }
 
   @override

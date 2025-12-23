@@ -30,7 +30,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       // Ganti URL sesuai IP kamu (127.0.0.1 atau 10.0.2.2)
-      final response = await request.get('http://127.0.0.1:8000/blog/get-user-id/');
+      final response = await request.get('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/get-user-id/');
       setState(() {
         currentUserId = response['user_id'];
       });
@@ -40,7 +40,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
   }
 
   Future<List<Comment>> fetchComments() async {
-    var url = Uri.parse('http://127.0.0.1:8000/blog/comments/${widget.blog.pk}/');
+    var url = Uri.parse('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/comments/${widget.blog.pk}/');
     var response = await http.get(
       url,
       headers: {"Content-Type": "application/json"},
@@ -63,7 +63,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
     if (_commentController.text.isEmpty) return;
 
     final response = await request.postJson(
-      "http://127.0.0.1:8000/blog/add-comment-flutter/${widget.blog.pk}/",
+      "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/add-comment-flutter/${widget.blog.pk}/",
       jsonEncode({"content": _commentController.text}),
     );
 
@@ -136,7 +136,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
 
                 if (confirm) {
                   final response = await request.postJson(
-                    "http://127.0.0.1:8000/blog/delete-flutter/${widget.blog.pk}/",
+                    "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/delete-flutter/${widget.blog.pk}/",
                     jsonEncode({}),
                   );
                   if (context.mounted) {
@@ -160,7 +160,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                   // --- GAMBAR ---
                   if (widget.blog.fields.thumbnail != null && widget.blog.fields.thumbnail!.isNotEmpty)
                     Image.network(
-                      'http://127.0.0.1:8000/blog/proxy-image/?url=${Uri.encodeComponent(widget.blog.fields.thumbnail!)}',
+                      'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/proxy-image/?url=${Uri.encodeComponent(widget.blog.fields.thumbnail!)}',
                       height: 250, width: double.infinity, fit: BoxFit.cover,
                       errorBuilder: (ctx, _, __) => Container(height: 200, color: Colors.grey),
                     )

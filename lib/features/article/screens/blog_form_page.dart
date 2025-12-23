@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class BlogFormPage extends StatefulWidget {
   final bool isSuperuser;
@@ -24,11 +25,12 @@ class _BlogFormPageState extends State<BlogFormPage> {
     final request = context.watch<CookieRequest>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('New Blog Post'),
-        backgroundColor: const Color(0xFFB71C1C), 
-        foregroundColor: Colors.white,
-      ),
+      appBar: const VenyukAppBar(
+        title: 'New Blog Post',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -162,9 +164,9 @@ class _BlogFormPageState extends State<BlogFormPage> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       // Kirim ke Django dan tunggu respons
-                      // URL lengkap: http://127.0.0.1:8000/blog/add-blog-ajax/
+                      // URL lengkap: https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/add-blog-ajax/
                       final response = await request.postJson( // <--- Pakai postJson
-                        "http://127.0.0.1:8000/blog/create-flutter/",
+                        "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/create-flutter/",
                         jsonEncode(<String, String>{ // <--- Harus di-encode jadi String JSON
                             'title': _title,
                             'content': _content,

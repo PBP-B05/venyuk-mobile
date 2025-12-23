@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
 
 class PromoActionBar extends StatelessWidget {
   final VoidCallback onCreatePromo;
@@ -23,6 +24,7 @@ class PromoActionBar extends StatelessWidget {
               color: Color(0xFF1A1A2E),
             ),
           ),
+          if (AuthService.isSuperuser)
           ElevatedButton.icon(
             onPressed: onCreatePromo,
             icon: const Icon(Icons.add, size: 18),

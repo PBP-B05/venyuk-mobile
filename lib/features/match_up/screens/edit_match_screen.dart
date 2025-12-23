@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class EditMatchScreen extends StatefulWidget {
   final int matchId;
@@ -248,12 +249,12 @@ class _EditMatchScreenState extends State<EditMatchScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFEF4444), // BACKGROUND MERAH
-      appBar: AppBar(
-        title: const Text("Edit Match", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Edit Match',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       // Ensure UI adjusts when keyboard appears
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).viewInsets.bottom),

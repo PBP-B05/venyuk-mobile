@@ -12,6 +12,8 @@ import 'package:venyuk_mobile/features/promo/widgets/promo_action_bar.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_detail_page.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_create_page.dart';
 import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart';
+import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class PromoPage extends StatefulWidget {
   const PromoPage({Key? key}) : super(key: key);
@@ -102,7 +104,11 @@ class _PromoPageState extends State<PromoPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: const LeftDrawer(),
-      appBar: _buildAppBar(),
+      appBar: const VenyukAppBar(
+        title: 'Promo',
+        showDrawerButton: true,
+        showUserMenu: true,
+        ),
       body: Column(
         children: [
           const PromoHeroSection(),
@@ -119,6 +125,7 @@ class _PromoPageState extends State<PromoPage> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final String displayUsername = AuthService.currentUser?.username ?? 'Tamu';
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -137,8 +144,8 @@ class _PromoPageState extends State<PromoPage> {
                 child: Icon(Icons.person, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'pbpb05',
+              Text(
+                displayUsername,
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,

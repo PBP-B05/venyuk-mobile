@@ -1,125 +1,166 @@
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
-
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-
 import '../../auth/login.dart';
 import '../pages/venue_page.dart';
-
 
 class LandingHero extends StatelessWidget {
   const LandingHero({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width > 900;
+    final isTablet = size.width > 600 && size.width <= 900;
 
-    return SizedBox(
-      height: width < 768 ? 520 : 650,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'images/landing/landing_banner.png',
-            fit: BoxFit.cover,
-          ),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromRGBO(29, 22, 22, 0.9),
-                  Color.fromRGBO(142, 22, 22, 0.8),
-                  Color.fromRGBO(216, 64, 64, 0.6),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      RichText(
-                        text: const TextSpan(
-                          style: TextStyle(
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.lightText,
-                          ),
-                          children: [
-                            TextSpan(text: 'Selamat Datang di\n'),
-                            TextSpan(
-                              text: 'VenYuk!',
-                              style: TextStyle(
-                                color: AppColors.primaryRed,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Platform yang menyediakan kebutuhan olahraga mulai dari venue, alat, teman, dan komunitas.',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: AppColors.lightText,
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryRed,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 14),
-                        ),
-                        onPressed: () {
-                          final request = context.read<CookieRequest>();
-
-                          if (request.loggedIn) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const VenuePage(),
-                              ),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LoginPage(), //Easier to debug
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Yuk Pesan Venue →', style: TextStyle(color: AppColors.lightText)),
-                      ),
-                    ],
-                  ),
-                ),
-
-                if (width > 900)
-                  Expanded(
-                    flex: 2,
-                    child: Image.asset(
-                      'images/landing/ronaldo.png',
-                      height: 450,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+    return Container(
+      height: isDesktop ? 700 : (isTablet ? 600 : 500),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('images/landing/landing_banner.png'),
+          fit: BoxFit.cover,
+        ),
       ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF1D1616).withOpacity(0.9),
+              Color(0xFF8E1616).withOpacity(0.8),
+              Color(0xFFD84040).withOpacity(0.6),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 80 : (isTablet ? 40 : 24),
+            vertical: 40,
+          ),
+          child: isDesktop
+              ? _buildDesktopLayout(context)
+              : _buildMobileLayout(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: _buildContent(context),
+        ),
+        const SizedBox(width: 60),
+        Expanded(
+          flex: 2,
+          child: _buildRonaldoImage(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildContent(context),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width > 900;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(
+              fontSize: isDesktop ? 48 : 32,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              height: 1.2,
+            ),
+            children: const [
+              TextSpan(text: 'Selamat Datang di\n'),
+              TextSpan(
+                text: 'VenYuk!',
+                style: TextStyle(
+                  color: Color(0xFFD84040),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Platform yang menyediakan kebutuhan olahraga mulai dari venue, alat, teman, dan komunitas.',
+          style: TextStyle(
+            fontSize: isDesktop ? 18 : 16,
+            color: Colors.white.withOpacity(0.9),
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 32),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFFD84040),
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 40 : 32,
+              vertical: isDesktop ? 18 : 16,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50),
+            ),
+            elevation: 3,
+          ),
+          onPressed: () {
+            final request = context.read<CookieRequest>();
+            
+            if (request.loggedIn) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const VenuePage()),
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+              );
+            }
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                'Yuk Pesan Venue',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(Icons.arrow_forward, size: 20),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRonaldoImage() {
+    return Image.asset(
+      'images/landing/ronaldo.png',
+      height: 500,
+      fit: BoxFit.contain,
     );
   }
 }

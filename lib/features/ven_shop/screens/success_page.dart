@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/product.dart';
+import 'package:venyuk_mobile/features/ven_shop/screens/shop_page.dart';
 import 'package:venyuk_mobile/global/screens/main_nav.dart'; 
 
 class SuccessPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _SuccessPageState extends State<SuccessPage> {
 
     try {
       final response = await request.postJson(
-        "http://127.0.0.1:8000/ven_shop/rating-flutter/${widget.product.id}/",
+        "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/ven_shop/rating-flutter/${widget.product.id}/",
         jsonEncode({"rating": _rating}),
       );
 
@@ -135,7 +136,7 @@ class _SuccessPageState extends State<SuccessPage> {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const MainNav()),
+                      MaterialPageRoute(builder: (context) => const ShopPage()),
                       (route) => false,
                     );
                   },

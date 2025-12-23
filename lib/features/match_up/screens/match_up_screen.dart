@@ -12,6 +12,7 @@ import '../../venyuk/widgets/left_drawer.dart';
 
 import 'create_match_screen.dart';
 import 'match_detail_screen.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class MatchUpScreen extends StatefulWidget {
   const MatchUpScreen({super.key});
@@ -156,28 +157,11 @@ class _MatchUpScreenState extends State<MatchUpScreen> {
       drawer: const LeftDrawer(),
 
       // 2. APP BAR
-      appBar: AppBar(
-        title: const Text(
-          "Match Up!", 
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+      appBar: const VenyukAppBar(
+        title: 'Match Up!',
+        showDrawerButton: true,
+        showUserMenu: true,
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: const IconThemeData(color: Colors.black), // Hamburger jadi hitam
-        actions: [
-           // Icon Profile (Placeholder)
-           IconButton(
-             icon: const Icon(Icons.account_circle, color: Colors.black, size: 30),
-             onPressed: () {
-               ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text("Fitur Profile akan segera hadir!"))
-               );
-             },
-           ),
-           const SizedBox(width: 8),
-        ],
-      ),
       
       // 3. BODY CONTENT
       body: RefreshIndicator(

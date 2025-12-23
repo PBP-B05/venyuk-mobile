@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/venue_model.dart';
 
 class VenueService {
-  static const baseUrl = 'http://127.0.0.1:8000/';
+  static const baseUrl = 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/';
 
   static Future<List<Venue>> fetchVenues({
     String? query,

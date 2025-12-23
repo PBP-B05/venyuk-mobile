@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/venue_model.dart';
 import '../widgets/booking_modal.dart';
+import '../../venyuk/widgets/left_drawer.dart';
+import '../../../global/widget/venyuk_app_bar.dart';
 
 class BookingPage extends StatelessWidget {
   final Venue venue;
@@ -13,9 +15,12 @@ class BookingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Booking Venue'),
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Booking Venue',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -26,15 +31,15 @@ class BookingPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
               venue.imageUrl.isNotEmpty
-                  ? 'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(venue.imageUrl)}'
-                  : 'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(
+                  ? 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/proxy-image/?url=${Uri.encodeComponent(venue.imageUrl)}'
+                  : 'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/proxy-image/?url=${Uri.encodeComponent(
                       'https://cdn.antaranews.com/cache/1200x800/2025/09/10/1000017960.jpg',
                     )}',
               height: 160,
               width: double.infinity,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Image.network(
-                'http://localhost:8000/proxy-image/?url=${Uri.encodeComponent(
+                'https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/proxy-image/?url=${Uri.encodeComponent(
                   'https://cdn.antaranews.com/cache/1200x800/2025/09/10/1000017960.jpg',
                 )}',
                 height: 160,

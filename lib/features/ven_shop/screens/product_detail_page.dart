@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/product.dart';
 import 'package:venyuk_mobile/features/ven_shop/screens/checkout_page.dart'; 
+import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final Product product;
@@ -10,12 +12,12 @@ class ProductDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Detail Produk"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Detail Produk',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

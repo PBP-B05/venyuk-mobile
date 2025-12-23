@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../auth/register.dart';
 import '../venyuk/pages/landing_page.dart';
 import '../venyuk/pages/venue_page.dart';
+import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -60,6 +61,12 @@ class _LoginPageState extends State<LoginPage> {
                       );
 
                       if (request.loggedIn) {
+                        String userUsername = response['username'];
+                        bool isSuperuser = response['is_superuser'] ?? false; 
+                        await AuthService.login(
+                          username: userUsername,
+                          isSuperuser: isSuperuser,
+                        );
                         if (!context.mounted) return;
                         Navigator.pushReplacement(
                           context,

@@ -4,6 +4,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'edit_match_screen.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class MatchDetailScreen extends StatefulWidget {
   final int matchId;
@@ -139,11 +140,12 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true, 
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white), 
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Detail Match',
+        showDrawerButton: true,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: Stack(
         children: [
           Positioned.fill(

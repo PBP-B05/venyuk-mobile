@@ -119,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                         setState(() { _isLoading = true; });
 
                         final response = await request.login(
-                          "http://127.0.0.1:8000/authenticate/login-flutter/",
+                          "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/login-flutter/",
                           {'username': username, 'password': password},
                         );
 

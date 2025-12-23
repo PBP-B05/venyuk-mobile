@@ -1,17 +1,12 @@
-// =====================================
-// FILE: lib/services/promo_service.dart (UPDATE)
-// =====================================
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:venyuk_mobile/features/promo/models/promo.dart';
 
 class PromoService {
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/";
 
   Future<List<PromoElement>> fetchPromos() async {
     try {
-      print('🔄 Fetching from: $baseUrl/promo/api/get_promos/');
       
       final response = await http.get(
         Uri.parse('$baseUrl/promo/api/get_promos/'),
@@ -20,18 +15,13 @@ class PromoService {
         },
       );
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final promo = promoFromJson(response.body);
-        print('✅ Successfully parsed ${promo.promos.length} promos');
         return promo.promos;
       } else {
         throw Exception('Failed to load promos: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error: $e');
       throw Exception('Error fetching promos: $e');
     }
   }
@@ -55,7 +45,6 @@ class PromoService {
 
   Future<Map<String, dynamic>> createPromo(Map<String, dynamic> promoData) async {
     try {
-      print('📝 Creating promo with data: $promoData');
       
       final response = await http.post(
         Uri.parse('$baseUrl/promo/api/create/'),  // Ubah ke /api/create/
@@ -66,8 +55,6 @@ class PromoService {
         body: json.encode(promoData),
       );
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -75,7 +62,6 @@ class PromoService {
         throw Exception('Failed to create promo: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error: $e');
       rethrow;
     }
   }
@@ -83,7 +69,7 @@ class PromoService {
   Future<Map<String, dynamic>> updatePromo(String code, Map<String, dynamic> promoData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/promo/api/$code/update/'),  // Ubah ke /api/
+        Uri.parse('$baseUrl/promo/api/$code/update/'),  
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

@@ -36,8 +36,8 @@ class _RegisterPageState extends State<RegisterPage> {
         "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/register_api/",
         jsonEncode({
           "username": _username.text.trim(),
-          "password1": _password1.text,
-          "password2": _password2.text,
+          "password": _password1.text,
+          "password_confirm": _password2.text,
         }),
       );
 

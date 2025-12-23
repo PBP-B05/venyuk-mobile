@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:venyuk_mobile/features/article/models/blog_entry.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class EditBlogPage extends StatefulWidget {
   final BlogEntry blog;
@@ -49,11 +50,12 @@ class _EditBlogPageState extends State<EditBlogPage> {
     final request = context.watch<CookieRequest>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Blog'),
-        backgroundColor: const Color(0xFFB71C1C),
-        foregroundColor: Colors.white,
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Edit Blog Post',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -161,7 +163,7 @@ class _EditBlogPageState extends State<EditBlogPage> {
                         // Kirim ke Django
                         final response = await request.postJson(
                           // Ganti URL sesuai endpoint kamu
-                          "http://127.0.0.1:8000/blog/edit-flutter/${widget.blog.pk}/",
+                          "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/blog/edit-flutter/${widget.blog.pk}/",
                           jsonEncode(<String, String>{
                             'title': _title,
                             'content': _content,

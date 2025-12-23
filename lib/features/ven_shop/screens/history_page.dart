@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:venyuk_mobile/features/ven_shop/models/history_item.dart';
+import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart'; 
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -13,7 +15,7 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   
   Future<List<HistoryItem>> fetchHistory(CookieRequest request) async {
-    final response = await request.get('http://127.0.0.1:8000/ven_shop/history-json/');
+    final response = await request.get('https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/ven_shop/history-json/');
     
     List<HistoryItem> listHistory = [];
     for (var d in response) {
@@ -29,11 +31,12 @@ class _HistoryPageState extends State<HistoryPage> {
     final request = context.watch<CookieRequest>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Riwayat Pembelian"),
-        backgroundColor: const Color(0xFFD84040),
-        foregroundColor: Colors.white,
-      ),
+      appBar: const VenyukAppBar(
+        title: 'Riwayat Pembelian',
+        showDrawerButton: false,
+        showUserMenu: false,
+        showBackButton: true,
+        ),
       backgroundColor: Colors.grey[100],
       body: FutureBuilder(
         future: fetchHistory(request),

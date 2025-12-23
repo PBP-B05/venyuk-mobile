@@ -1,7 +1,3 @@
-// =====================================
-// FILE: lib/models/user.dart
-// =====================================
-
 class User {
   final String username;
   final bool isSuperuser;

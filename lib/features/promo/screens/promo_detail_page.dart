@@ -1,7 +1,3 @@
-// =====================================
-// FILE: lib/features/promo/screens/promo_detail_page.dart
-// =====================================
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:venyuk_mobile/features/promo/models/promo.dart';
@@ -9,9 +5,9 @@ import 'package:venyuk_mobile/features/promo/services/auth_service.dart';
 import 'package:venyuk_mobile/features/promo/services/promo_service.dart';
 import 'package:venyuk_mobile/features/promo/utils/date_formatter.dart';
 import 'package:venyuk_mobile/features/promo/screens/promo_create_page.dart';
+import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart';
 
-// Mock class jika belum ada (Bisa dihapus jika sudah import file asli)
-class AuthService { static bool get isSuperuser => true; }
+
 class DateFormatter { static String formatDate(DateTime d) => "${d.day}-${d.month}-${d.year}"; }
 
 class PromoDetailPage extends StatefulWidget {
@@ -114,14 +110,10 @@ class _PromoDetailPageState extends State<PromoDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text("Detail Promo", style: TextStyle(color: Colors.black)),
+      appBar: const VenyukAppBar(
+        title: 'Detail Promo',
+        showBackButton: true,
+        showUserMenu: false,
       ),
       body: SingleChildScrollView(
         child: Column(

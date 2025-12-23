@@ -1,5 +1,10 @@
 # venyuk_mobile
 
+[![Build Status](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc/status.svg?token=WgX9jDtYPVcT92Yzfq-Vog&branch=main)](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc)
+
+## Download
+Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/e23bc240-0243-4708-94f7-fedf4c2c7ffc/installable-artifacts/5e22d89bbe785821/public-install-page/c94633e3afc7d70d72aa0d4671a92c72)
+
 Nama-nama anggota kelompok 
 -Anderson Tirza Liman 
 -Bintoro Nata Wijaya 

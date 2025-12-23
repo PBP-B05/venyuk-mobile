@@ -6,6 +6,7 @@ import 'package:venyuk_mobile/features/ven_shop/widget/product_card.dart';
 import 'package:venyuk_mobile/features/ven_shop/screens/product_detail_page.dart';
 import 'package:venyuk_mobile/features/venyuk/widgets/left_drawer.dart';
 import 'package:venyuk_mobile/global/widget/venyuk_app_bar.dart'; 
+import 'package:venyuk_mobile/global/widget/chatbot.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -149,6 +150,20 @@ class _ShopPageState extends State<ShopPage> {
               ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFD84040), // Sesuaikan warna dengan tema Venyuk
+        tooltip: 'Chat dengan AI',
+        onPressed: () {
+          // Navigasi ke Halaman Chatbot
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ChatScreen(), // Pastikan nama class ini sesuai dengan di chatbot.dart
+            ),
+          );
+        },
+        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
 
       body: Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:venyuk_mobile/features/ven_shop/screens/history_page.dart';
+import 'package:venyuk_mobile/features/ven_shop/screens/product_form_page.dart';
 import '../../features/venyuk/pages/landing_page.dart';
 import '../../features/auth/login.dart';
 
@@ -149,7 +150,7 @@ class VenyukAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
       ),
-      // Tampilkan menu Add Product hanya jika showAddProduct = true dan user adalah admin
+
       if (showAddProduct && isAdmin)
         const PopupMenuItem(
           value: 'add_product',
@@ -212,16 +213,15 @@ class VenyukAppBar extends StatelessWidget implements PreferredSizeWidget {
         break;
 
       case 'add_product':
-        // Panggil callback jika ada
         if (onAddProduct != null) {
           onAddProduct!();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Navigasi ke Add Product")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProductFormPage()),
           );
         }
         break;
-
       case 'logout':
         final response = await request.logout(
           "https://muhammad-fattan-venyuk.pbp.cs.ui.ac.id/authenticate/logout_api/",

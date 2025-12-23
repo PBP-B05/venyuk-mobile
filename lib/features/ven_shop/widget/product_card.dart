@@ -23,6 +23,8 @@ class ProductCard extends StatelessWidget {
     bool isAdmin = false;
     if (request.jsonData.containsKey('is_admin')) {
         isAdmin = request.jsonData['is_admin'] == true;
+    }else if (request.jsonData.containsKey('is_superuser')) {
+        isAdmin = request.jsonData['is_superuser'] == true;
     }
 
     return InkWell(
@@ -149,7 +151,6 @@ class ProductCard extends StatelessWidget {
                           ],
                         ),
 
-                        // Edit & Delete
                         if (isAdmin) 
                           Row(
                             children: [
